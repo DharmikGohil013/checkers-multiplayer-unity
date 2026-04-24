@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac5cff90caf864241b3ba691562d7941, type: 3}
+  m_Name: DefaultPieceConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Checkers.Data.PieceConfig
+  playerColors:
+  - {r: 0.85, g: 0.15, b: 0.15, a: 1}
+  - {r: 0.14901961, g: 0.44705886, b: 0.8431373, a: 1}
+  - {r: 0.14509805, g: 0.72156864, b: 0.24313727, a: 1}
+  - {r: 0.92830896, g: 1, b: 0, a: 1}
+  normalPieceSprite: {fileID: 0}
+  kingPieceSprite: {fileID: 0}
+  moveAnimationDuration: 0.2
+  highlightTint: {r: 1, g: 1, b: 0.5, a: 1}
