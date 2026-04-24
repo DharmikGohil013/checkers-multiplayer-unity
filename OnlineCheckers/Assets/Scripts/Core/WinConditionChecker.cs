@@ -1,124 +1,99 @@
+using UnityEngine;
 using Checkers.Data;
+using Checkers.Core;
+using Checkers.Gameplay;
 using Checkers.Utilities;
 
-namespace Checkers.Core
+/// <summary>
+/// Checks win/draw conditions after every move.
+/// Attach to the GameManagers GameObject.
+/// </summary>
+public class WinConditionChecker : MonoBehaviour
 {
+    // -1 = no winner yet
+    public const int NO_WINNER = -1;
+
     /// <summary>
-    /// Evaluates win/loss conditions for the Checkers game.
-    /// Static class with pure functions — no state.
+    /// Check if any player has won.
+    /// Returns the winning playerOwner index (0-based), or NO_WINNER (-1).
+    /// Call this after every move completes.
     /// </summary>
-    public static class WinConditionChecker
+    public static int CheckWinCondition(PieceData[,] board, int[] activePlayers, GameSettings settings)
     {
-        /// <summary>
-        /// Checks if any player has won the game.
-        /// A player wins if all opponents have no pieces left or no valid moves.
-        /// </summary>
-        /// <param name="board">Current board state.</param>
-        /// <param name="activePlayers">Array of active player actor numbers.</param>
-        /// <param name="playerCount">Total player count (2 or 4).</param>
-        /// <param name="settings">Game settings (for rule config).</param>
-        /// <returns>Actor number of the winner, or -1 if no winner yet.</returns>
-        public static int CheckWinCondition(PieceData[,] board, int[] activePlayers, int playerCount, GameSettings settings)
+        if (board == null || activePlayers == null || activePlayers.Length < 2)
+            return NO_WINNER;
+
+        foreach (int player in activePlayers)
         {
-            if (activePlayers == null || activePlayers.Length < 2)
-                return -1;
-
-            int size = board.GetLength(0);
-
-            // For 2-player mode: check if one player has eliminated the other
-            if (playerCount == 2)
+            if (HasLost(board, player, activePlayers, settings))
             {
-                for (int i = 0; i < activePlayers.Length; i++)
+                // Find the opponent who won
+                foreach (int other in activePlayers)
                 {
-                    int playerOwner = i + 1; // Player owner is 1-based
-                    if (HasNoPieces(board, playerOwner) || HasNoMoves(board, playerOwner, settings))
-                    {
-                        // This player loses; the other player wins
-                        int winnerIndex = (i == 0) ? 1 : 0;
-                        if (winnerIndex < activePlayers.Length)
-                        {
-                            GameLogger.Log(GameLogger.LogLevel.INFO,
-                                $"Win condition met: Player {playerOwner} eliminated. Winner: Actor {activePlayers[winnerIndex]}");
-                            return activePlayers[winnerIndex];
-                        }
-                    }
+                    if (other != player)
+                        return other;
                 }
             }
-            else // 4-player mode
-            {
-                // Count active players (those with pieces and moves)
-                int activeCount = 0;
-                int lastActiveActor = -1;
-
-                for (int i = 0; i < activePlayers.Length; i++)
-                {
-                    int playerOwner = i + 1;
-                    if (!HasNoPieces(board, playerOwner) && !HasNoMoves(board, playerOwner, settings))
-                    {
-                        activeCount++;
-                        lastActiveActor = activePlayers[i];
-                    }
-                }
-
-                // If only one player remains active, they win
-                if (activeCount == 1)
-                {
-                    GameLogger.Log(GameLogger.LogLevel.INFO,
-                        $"Win condition met in 4-player mode. Last player standing: Actor {lastActiveActor}");
-                    return lastActiveActor;
-                }
-
-                // If no players are active (shouldn't happen normally), return draw
-                if (activeCount == 0)
-                {
-                    GameLogger.Log(GameLogger.LogLevel.WARN, "No active players found — draw condition.");
-                    return -1;
-                }
-            }
-
-            return -1; // No winner yet
         }
 
-        /// <summary>
-        /// Returns true if the specified player has no pieces on the board.
-        /// </summary>
-        public static bool HasNoPieces(PieceData[,] board, int playerOwner)
-        {
-            int size = board.GetLength(0);
+        return NO_WINNER;
+    }
 
-            for (int r = 0; r < size; r++)
+    /// <summary>
+    /// Returns true if the given player has lost:
+    /// — they have no pieces left, OR
+    /// — they have no valid moves available.
+    /// </summary>
+    public static bool HasLost(PieceData[,] board, int playerOwner, int[] activePlayers, GameSettings settings)
+    {
+        if (HasNoPieces(board, playerOwner))
+        {
+            GameLogger.Log(GameLogger.LogLevel.INFO,
+                $"[WinCondition] Player {playerOwner} has no pieces left.");
+            return true;
+        }
+
+        if (HasNoMoves(board, playerOwner, settings))
+        {
+            GameLogger.Log(GameLogger.LogLevel.INFO,
+                $"[WinCondition] Player {playerOwner} has no valid moves.");
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true if the player has zero pieces remaining on the board.
+    /// </summary>
+    public static bool HasNoPieces(PieceData[,] board, int playerOwner)
+    {
+        int size = board.GetLength(0);
+        for (int r = 0; r < size; r++)
+            for (int c = 0; c < size; c++)
+                if (!board[r, c].IsEmpty && board[r, c].playerOwner == playerOwner)
+                    return false;
+        return true;
+    }
+
+    /// <summary>
+    /// Returns true if the player has no legal moves available.
+    /// </summary>
+    public static bool HasNoMoves(PieceData[,] board, int playerOwner, GameSettings settings)
+    {
+        int size = board.GetLength(0);
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
             {
-                for (int c = 0; c < size; c++)
+                if (!board[r, c].IsEmpty && board[r, c].playerOwner == playerOwner)
                 {
-                    if (board[r, c].playerOwner == playerOwner)
+                    var moves = CheckersRules.GetValidMovesForPiece(board, r, c, settings);
+                    if (moves != null && moves.Count > 0)
                         return false;
                 }
             }
-
-            return true;
         }
-
-        /// <summary>
-        /// Returns true if the specified player has no valid moves available.
-        /// </summary>
-        public static bool HasNoMoves(PieceData[,] board, int playerOwner, GameSettings settings)
-        {
-            int size = board.GetLength(0);
-
-            for (int r = 0; r < size; r++)
-            {
-                for (int c = 0; c < size; c++)
-                {
-                    if (board[r, c].playerOwner == playerOwner)
-                    {
-                        var moves = CheckersRules.GetValidMovesForPiece(board, r, c, settings);
-                        if (moves.Count > 0)
-                            return false;
-                    }
-                }
-            }
-
-            return true;
-        }
+        return true;
     }
 }

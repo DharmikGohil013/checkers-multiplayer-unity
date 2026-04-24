@@ -2,182 +2,200 @@ using System.Collections.Generic;
 using UnityEngine;
 using Checkers.Utilities;
 
-namespace Checkers.Gameplay
+/// <summary>
+/// Generic MonoBehaviour object pool.
+/// Attach two instances to GameManagers — one for pieces, one for highlights.
+/// </summary>
+public class ObjectPool : MonoBehaviour
 {
-    /// <summary>
-    /// Generic object pool for MonoBehaviour-derived components.
-    /// Pre-warms on initialization and auto-expands with a warning if exhausted.
-    /// Used for CheckersPiece and BoardCell pooling to avoid runtime allocations.
-    /// </summary>
-    /// <typeparam name="T">MonoBehaviour type to pool.</typeparam>
-    public class ObjectPool<T> : MonoBehaviour where T : MonoBehaviour
+    [Header("Pool Configuration")]
+    [SerializeField] private GameObject prefab;
+    [SerializeField] private int initialSize = 24;
+    [SerializeField] private Transform poolParent;
+
+    private readonly Queue<GameObject> _pool = new Queue<GameObject>();
+    private readonly List<GameObject> _active = new List<GameObject>();
+
+    private void Awake()
     {
-        #region Fields
+        if (poolParent == null)
+            poolParent = transform;
 
-        private T _prefab;
-        private Queue<T> _pool;
-        private Transform _poolParent;
-        private int _initialSize;
-        private bool _initialized;
+        PreWarm();
+    }
 
-        #endregion
-
-        #region Initialization
-
-        /// <summary>
-        /// Initializes the pool with a prefab and pre-warms the specified number of instances.
-        /// </summary>
-        /// <param name="prefab">The prefab to instantiate.</param>
-        /// <param name="initialSize">Number of instances to pre-create.</param>
-        public void Initialize(T prefab, int initialSize)
+    private void PreWarm()
+    {
+        for (int i = 0; i < initialSize; i++)
         {
-            if (_initialized)
-            {
-                GameLogger.Log(GameLogger.LogLevel.WARN,
-                    $"ObjectPool<{typeof(T).Name}> already initialized.");
-                return;
-            }
+            GameObject obj = CreateNew();
+            obj.SetActive(false);
+            _pool.Enqueue(obj);
+        }
+    }
 
-            _prefab = prefab;
-            _initialSize = initialSize;
-            _pool = new Queue<T>(initialSize);
+    private GameObject CreateNew()
+    {
+        GameObject obj = Instantiate(prefab, poolParent);
+        return obj;
+    }
 
-            // Create a parent object for pooled items
-            GameObject parentGO = new GameObject($"Pool_{typeof(T).Name}");
-            parentGO.transform.SetParent(transform);
-            _poolParent = parentGO.transform;
+    /// <summary>Get a pooled object. Auto-expands if pool is empty.</summary>
+    public GameObject Get()
+    {
+        GameObject obj;
 
-            // Pre-warm the pool
-            for (int i = 0; i < initialSize; i++)
-            {
-                T instance = CreateInstance();
-                instance.gameObject.SetActive(false);
-                _pool.Enqueue(instance);
-            }
-
-            _initialized = true;
-
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"ObjectPool<{typeof(T).Name}> initialized with {initialSize} instances.");
+        if (_pool.Count > 0)
+        {
+            obj = _pool.Dequeue();
+        }
+        else
+        {
+            GameLogger.Log(GameLogger.LogLevel.WARN, $"[ObjectPool] Pool empty for {prefab.name} — expanding.");
+            obj = CreateNew();
         }
 
-        #endregion
+        obj.SetActive(true);
+        _active.Add(obj);
+        return obj;
+    }
 
-        #region Pool Operations
+    /// <summary>Get a pooled object cast to a specific component.</summary>
+    public T Get<T>() where T : Component
+    {
+        return Get().GetComponent<T>();
+    }
 
-        /// <summary>
-        /// Retrieves an instance from the pool. If the pool is empty, creates a new instance
-        /// (with a warning log about pool exhaustion).
-        /// </summary>
-        public T Get()
+    /// <summary>Return an object back to the pool.</summary>
+    public void Return(GameObject obj)
+    {
+        if (obj == null) return;
+
+        obj.SetActive(false);
+        obj.transform.SetParent(poolParent);
+        _active.Remove(obj);
+        _pool.Enqueue(obj);
+    }
+
+    /// <summary>Return all currently active objects back to the pool.</summary>
+    public void ReturnAll()
+    {
+        // copy to avoid modifying list during iteration
+        var toReturn = new List<GameObject>(_active);
+        foreach (var obj in toReturn)
+            Return(obj);
+    }
+
+    public int ActiveCount => _active.Count;
+    public int PooledCount => _pool.Count;
+}
+
+/// <summary>
+/// A generic object pool for components.
+/// </summary>
+public class ObjectPool<T> : MonoBehaviour where T : Component
+{
+    private T _prefab;
+    private int _initialSize;
+    private Transform _poolParent;
+    private readonly Queue<T> _pool = new Queue<T>();
+    private bool _initialized;
+
+    public void Initialize(T prefab, int initialSize)
+    {
+        _prefab = prefab;
+        _initialSize = initialSize;
+        _poolParent = transform;
+        
+        for (int i = 0; i < initialSize; i++)
         {
-            if (!_initialized)
-            {
-                GameLogger.Log(GameLogger.LogLevel.ERROR,
-                    $"ObjectPool<{typeof(T).Name}>.Get() called before Initialize().");
-                return null;
-            }
-
-            T instance;
-
-            if (_pool.Count > 0)
-            {
-                instance = _pool.Dequeue();
-
-                // Skip null/destroyed instances
-                while (instance == null && _pool.Count > 0)
-                {
-                    instance = _pool.Dequeue();
-                }
-
-                if (instance != null)
-                {
-                    instance.gameObject.SetActive(true);
-                    return instance;
-                }
-            }
-
-            // Pool exhausted — create a new instance
-            GameLogger.Log(GameLogger.LogLevel.WARN,
-                $"ObjectPool<{typeof(T).Name}> exhausted! Creating new instance. " +
-                $"Consider increasing initial pool size (currently {_initialSize}).");
-
-            instance = CreateInstance();
-            instance.gameObject.SetActive(true);
-            return instance;
-        }
-
-        /// <summary>
-        /// Returns an instance to the pool. The GameObject is deactivated.
-        /// </summary>
-        public void Return(T instance)
-        {
-            if (instance == null)
-                return;
-
-            if (!_initialized)
-            {
-                GameLogger.Log(GameLogger.LogLevel.WARN,
-                    $"ObjectPool<{typeof(T).Name}>.Return() called before Initialize(). Destroying object.");
-                Destroy(instance.gameObject);
-                return;
-            }
-
+            T instance = CreateInstance();
             instance.gameObject.SetActive(false);
-            instance.transform.SetParent(_poolParent);
             _pool.Enqueue(instance);
         }
+        
+        _initialized = true;
+    }
 
-        /// <summary>
-        /// Returns the current number of available instances in the pool.
-        /// </summary>
-        public int AvailableCount => _initialized ? _pool.Count : 0;
-
-        /// <summary>
-        /// Clears the pool and destroys all instances.
-        /// </summary>
-        public void Clear()
+    public T Get()
+    {
+        if (!_initialized)
         {
-            if (!_initialized)
-                return;
+            GameLogger.Log(GameLogger.LogLevel.ERROR, $"ObjectPool<{typeof(T).Name}> not initialized!");
+            return null;
+        }
 
-            while (_pool.Count > 0)
+        while (_pool.Count > 0)
+        {
+            T instance = _pool.Dequeue();
+            if (instance != null)
             {
-                T instance = _pool.Dequeue();
-                if (instance != null)
-                    Destroy(instance.gameObject);
+                instance.gameObject.SetActive(true);
+                return instance;
             }
-
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"ObjectPool<{typeof(T).Name}> cleared.");
         }
 
-        #endregion
+        // Pool exhausted — create a new instance
+        GameLogger.Log(GameLogger.LogLevel.WARN,
+            $"ObjectPool<{typeof(T).Name}> exhausted! Creating new instance. " +
+            $"Consider increasing initial pool size (currently {_initialSize}).");
 
-        #region Helpers
+        T newInstance = CreateInstance();
+        newInstance.gameObject.SetActive(true);
+        return newInstance;
+    }
 
-        private T CreateInstance()
+    public void Return(T instance)
+    {
+        if (instance == null)
+            return;
+
+        if (!_initialized)
         {
-            if (_prefab == null)
-            {
-                GameLogger.Log(GameLogger.LogLevel.ERROR,
-                    $"ObjectPool<{typeof(T).Name}> prefab is null!");
-                return null;
-            }
-
-            T instance = Instantiate(_prefab, _poolParent);
-            return instance;
+            GameLogger.Log(GameLogger.LogLevel.WARN,
+                $"ObjectPool<{typeof(T).Name}>.Return() called before Initialize(). Destroying object.");
+            Destroy(instance.gameObject);
+            return;
         }
 
-        #endregion
+        instance.gameObject.SetActive(false);
+        instance.transform.SetParent(_poolParent);
+        _pool.Enqueue(instance);
+    }
 
-        #region Cleanup
+    public int AvailableCount => _initialized ? _pool.Count : 0;
 
-        private void OnDestroy()
+    public void Clear()
+    {
+        if (!_initialized)
+            return;
+
+        while (_pool.Count > 0)
         {
-            Clear();
+            T instance = _pool.Dequeue();
+            if (instance != null)
+                Destroy(instance.gameObject);
         }
 
-        #endregion
+        GameLogger.Log(GameLogger.LogLevel.INFO,
+            $"ObjectPool<{typeof(T).Name}> cleared.");
+    }
+
+    private T CreateInstance()
+    {
+        if (_prefab == null)
+        {
+            GameLogger.Log(GameLogger.LogLevel.ERROR,
+                $"ObjectPool<{typeof(T).Name}> prefab is null!");
+            return null;
+        }
+
+        T instance = Instantiate(_prefab, _poolParent);
+        return instance;
+    }
+
+    private void OnDestroy()
+    {
+        Clear();
     }
 }

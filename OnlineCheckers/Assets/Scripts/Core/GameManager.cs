@@ -177,7 +177,7 @@ namespace Checkers.Core
             // Check win condition after turn change
             int[] activePlayers = turnManager.GetPlayerActorNumbers();
             int winner = WinConditionChecker.CheckWinCondition(
-                boardManager.BoardState, activePlayers, boardConfig.playerCount, gameSettings);
+                boardManager.BoardState, activePlayers, gameSettings);
 
             if (winner != -1)
             {
