@@ -52,12 +52,27 @@ namespace Checkers.Core
 
         private void Awake()
         {
-            if (gameSettings == null && GameManager.Instance != null)
-                gameSettings = GameManager.Instance.GameSettings;
+            // Do NOT access GameManager.Instance here — Awake execution order
+            // is not guaranteed, and GameManager.Awake may not have run yet.
+            // gameSettings will be loaded lazily in EnsureSettings().
+        }
+
+        private void EnsureSettings()
+        {
+            if (gameSettings == null)
+            {
+                if (GameManager.Instance != null)
+                    gameSettings = GameManager.Instance.GameSettings;
+
+                if (gameSettings == null)
+                    gameSettings = Resources.Load<GameSettings>("GameSettings");
+            }
         }
 
         private void Update()
         {
+            EnsureSettings();
+
             if (!_timerActive || gameSettings == null)
                 return;
 
@@ -78,9 +93,10 @@ namespace Checkers.Core
 
                 OnTurnTimeout?.Invoke(timedOutActor);
 
-                // Auto-advance turn on timeout (only MasterClient advances)
+                // Auto-advance turn on timeout (only MasterClient advances, via network RPC)
                 if (PhotonNetwork.IsMasterClient)
                 {
+                    // Use the same NextTurn path that triggers the RPC_EndTurn on all clients
                     NextTurn();
                 }
             }
@@ -101,6 +117,8 @@ namespace Checkers.Core
                 GameLogger.Log(GameLogger.LogLevel.ERROR, "InitializePlayers called with empty array.");
                 return;
             }
+
+            EnsureSettings();
 
             _playerActorNumbers = new int[actorNumbers.Length];
             Array.Copy(actorNumbers, _playerActorNumbers, actorNumbers.Length);

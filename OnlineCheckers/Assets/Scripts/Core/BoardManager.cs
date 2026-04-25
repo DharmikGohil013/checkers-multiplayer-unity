@@ -182,6 +182,15 @@ namespace Checkers.Core
             if (cellPrefab != null && _cellPool.PooledCount == 0 && _cellPool.ActiveCount == 0)
                 _cellPool.Setup(cellPrefab, boardParent, 64);
 
+            // IMPORTANT: Reset boardParent transform to identity so all children
+            // are placed in clean local space. This prevents scale/rotation distortion.
+            if (boardParent != null)
+            {
+                boardParent.localPosition = Vector3.zero;
+                boardParent.localRotation = Quaternion.identity;
+                boardParent.localScale = Vector3.one;
+            }
+
             _boardSize   = size;
             _playerCount = playerCount;
             _boardState  = new PieceData[size, size];
@@ -251,11 +260,14 @@ namespace Checkers.Core
                         if (cell == null) cell = go.AddComponent<BoardCell>();
                     }
 
+                    // CRITICAL: Reset transform completely before setting new values.
+                    // Pool returns objects with stale scale/rotation from previous use.
+                    cell.transform.localRotation = Quaternion.identity;
+                    cell.transform.localScale = new Vector3(0.39f, 0.39f, 1f);
                     cell.transform.localPosition = new Vector3(
                         col * cellSize - offset,
                         row * cellSize - offset,
                         0f);
-                    cell.transform.localScale = Vector3.one * cellSize * 0.95f;
                     cell.Initialize(row, col, cellColor);
                     cell.gameObject.name = $"Cell_{row}_{col}";
                     _cells[row, col] = cell;
@@ -465,6 +477,9 @@ namespace Checkers.Core
             float offset   = (_boardSize * cellSize) / 2f - cellSize / 2f;
 
             piece.transform.SetParent(boardParent);
+            // CRITICAL: Reset transform completely before setting new values
+            piece.transform.localRotation = Quaternion.identity;
+            piece.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
             piece.transform.localPosition = new Vector3(
                 col * cellSize - offset,
                 row * cellSize - offset,

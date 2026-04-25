@@ -6737,14 +6737,14 @@ struct TypeConstructorVisitor_tFC61250F68BF43FE889F5B1002CBFF90648E9C7F  : publi
 {
 	RuntimeObject* ___TypeConstructor;
 };
-struct U3CAnimateReconnectingTextU3Ed__32_tC3E7D8C2395CD88F4EB70B0AC25DA2D6C8A773F0  : public RuntimeObject
+struct U3CAnimateReconnectingTextU3Ed__43_tB9CF87C6862B7B07FD5E81659A809AC8A6DB9FC1  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
 	UIManager_t496DDE8BD588F9FB0EF9761684593FE2114F1F56* ___U3CU3E4__this;
 	int32_t ___U3CdotsU3E5__2;
 };
-struct U3CFlashCoroutineU3Ed__36_t32063F708E96B986D178E35291206D5276A409FB  : public RuntimeObject
+struct U3CFlashCoroutineU3Ed__47_t04768E9E89A25069B674B24E27386045AB561CD0  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
@@ -30372,7 +30372,7 @@ struct U3CReadReverseRdnsU3Ed__21_t6DC5309953340D6F3CAF345220E2D0AAD878D3DE  : p
 	Stack_1_t11FC055BC8A112A4D3474F6FA0DCAC26D397C08C* ___U3CrdnReadersU3E5__2;
 	DerSequenceReader_tE6BA1C28D31B7F21AFC1A327DD7BBC028041308A* ___U3CrdnReaderU3E5__3;
 };
-struct U3CKingPromotionAnimationU3Ed__26_t1E3D1AC52F088C6BDC912D9C65237EA48AB1F5BF  : public RuntimeObject
+struct U3CKingPromotionAnimationU3Ed__25_tBC5290E4897248E0F4D00A527D19EFB8DE7825AB  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
@@ -30382,7 +30382,7 @@ struct U3CKingPromotionAnimationU3Ed__26_t1E3D1AC52F088C6BDC912D9C65237EA48AB1F5
 	float ___U3CdurationU3E5__4;
 	float ___U3CelapsedU3E5__5;
 };
-struct U3CMoveAnimationCoroutineU3Ed__24_t3F3BA647D64680756C9E64594A411720DCBF075F  : public RuntimeObject
+struct U3CMoveAnimationCoroutineU3Ed__23_tA5BFE975C3A900A8EE765DC95CD7CDD702D8E82F  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
@@ -47395,6 +47395,7 @@ struct InputHandler_t44373F5B892DA2EA4A7BE7FDF4F752963300D85A  : public MonoBeha
 	BoardManager_tD0460267485AD184482969184F65770D1F5FD30B* ____boardManager;
 	TurnManager_t2D15495F2A7FA4B843AA3C5E617E2DE37C854F28* ____turnManager;
 	NetworkGameManager_t0237979287D731A3D256334D66D729732615979F* ____networkGameManager;
+	Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* ____mainCamera;
 	Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ____moveHighlightColor;
 	Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ____captureHighlightColor;
 };
@@ -48144,8 +48145,13 @@ struct UIManager_t496DDE8BD588F9FB0EF9761684593FE2114F1F56  : public MonoBehavio
 	TextMeshProUGUIU5BU5D_tCAB9404D43876DF686DFBB4613543479CC1CC24A* ___pieceCountTexts;
 	TextMeshProUGUI_t101091AF4B578BB534C92E9D1EEAF0611636D957* ___winnerText;
 	Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___winnerColorIndicator;
+	Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* ___playAgainButton;
+	Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* ___quitButton;
 	TextMeshProUGUI_t101091AF4B578BB534C92E9D1EEAF0611636D957* ___reconnectingText;
 	TextMeshProUGUI_t101091AF4B578BB534C92E9D1EEAF0611636D957* ___connectionFailedText;
+	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___resignConfirmPanel;
+	Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* ___resignConfirmYes;
+	Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* ___resignConfirmNo;
 	Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___invalidMoveFlashImage;
 	Coroutine_t85EA685566A254C23F3FD77AB5BDFFFF8799596B* ____flashCoroutine;
 	GameObjectU5BU5D_tFF67550DFCE87096D7A3734EA15B75896B2722CF* ____allPanels;
@@ -49214,6 +49220,7 @@ struct NetworkGameManager_t0237979287D731A3D256334D66D729732615979F  : public Mo
 	GameManager_t1F7DAEBE2E535E2FA1602A65DAFA3F325359E7C8* ____gameManager;
 	BoardManager_tD0460267485AD184482969184F65770D1F5FD30B* ____boardManager;
 	TurnManager_t2D15495F2A7FA4B843AA3C5E617E2DE37C854F28* ____turnManager;
+	bool ____gameInitialized;
 };
 struct NetworkLobbyManager_t0CC916A65FD5C3C0A41E13E504982F6C0F3C8745  : public MonoBehaviourPunCallbacks_t0B3C6A2FD0A09450A8505ACD42A647F3BCE6D783
 {
@@ -62601,9 +62608,9 @@ const Il2CppTypeDefinitionSizes g_typeDefinitionSize9166 = { sizeof(GameUIContro
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9167;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9167 = { sizeof(LobbyUIController_t65AE16EFA88563502836DC70670F49C1ECFF5970), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9168;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9168 = { sizeof(U3CAnimateReconnectingTextU3Ed__32_tC3E7D8C2395CD88F4EB70B0AC25DA2D6C8A773F0), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9168 = { sizeof(U3CAnimateReconnectingTextU3Ed__43_tB9CF87C6862B7B07FD5E81659A809AC8A6DB9FC1), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9169;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9169 = { sizeof(U3CFlashCoroutineU3Ed__36_t32063F708E96B986D178E35291206D5276A409FB), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9169 = { sizeof(U3CFlashCoroutineU3Ed__47_t04768E9E89A25069B674B24E27386045AB561CD0), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9170;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9170 = { sizeof(UIManager_t496DDE8BD588F9FB0EF9761684593FE2114F1F56), -1, sizeof(UIManager_t496DDE8BD588F9FB0EF9761684593FE2114F1F56_StaticFields), 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9171;
@@ -62629,9 +62636,9 @@ const Il2CppTypeDefinitionSizes g_typeDefinitionSize9180 = { sizeof(BoardCell_tF
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9181;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9181 = { sizeof(CellPool_tFBB9036FE69491C8E0DA3D5DE43D7C3ED2F621D1), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9182;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9182 = { sizeof(U3CKingPromotionAnimationU3Ed__26_t1E3D1AC52F088C6BDC912D9C65237EA48AB1F5BF), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9182 = { sizeof(U3CKingPromotionAnimationU3Ed__25_tBC5290E4897248E0F4D00A527D19EFB8DE7825AB), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9183;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9183 = { sizeof(U3CMoveAnimationCoroutineU3Ed__24_t3F3BA647D64680756C9E64594A411720DCBF075F), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9183 = { sizeof(U3CMoveAnimationCoroutineU3Ed__23_tA5BFE975C3A900A8EE765DC95CD7CDD702D8E82F), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9184;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9184 = { sizeof(CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A), -1, sizeof(CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A_StaticFields), 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9185;

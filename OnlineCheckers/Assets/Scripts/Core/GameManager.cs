@@ -80,28 +80,30 @@ namespace Checkers.Core
 
         private void Awake()
         {
-            // Check if the existing instance is actually alive.
-            // When Photon reloads a scene via PhotonNetwork.LoadLevel,
-            // the old GameManager is destroyed but the static _instance
-            // reference may still point to it (Unity null-check trick).
-            // If _instance is "Unity-null" (destroyed), we must claim ownership.
+            // BULLETPROOF singleton: never destroy ourselves during gameplay.
+            // The only valid scenario to destroy is if there's a truly live
+            // duplicate in the same scene. A stale (destroyed) reference from
+            // a previous scene must be replaced, not treated as a duplicate.
             if (_instance != null && _instance != this)
             {
-                // Unity overloads == so a destroyed object == null, but the
-                // C# reference is still non-null. Check the Unity-null side:
-                if ((object)_instance != null && _instance == null)
+                // Check if the existing instance is truly alive (not destroyed)
+                // Unity overloads == null to return true for destroyed objects,
+                // but the C# object reference stays non-null until GC.
+                bool existingIsAlive = !ReferenceEquals(_instance, null) && ((UnityEngine.Object)_instance) != null;
+
+                if (existingIsAlive)
                 {
-                    // Stale reference — previous instance was destroyed (scene unload).
-                    // Safe to replace.
-                    GameLogger.Log(GameLogger.LogLevel.INFO,
-                        "Previous GameManager was destroyed (scene reload). Replacing singleton.");
-                    _instance = this;
+                    // There is a real, living duplicate — destroy THIS one
+                    GameLogger.Log(GameLogger.LogLevel.WARN,
+                        "Duplicate GameManager detected. Destroying this new instance.");
+                    Destroy(gameObject);
+                    return;
                 }
                 else
                 {
-                    GameLogger.Log(GameLogger.LogLevel.WARN, "Duplicate GameManager detected. Destroying this instance.");
-                    Destroy(gameObject);
-                    return;
+                    // Stale reference from a destroyed scene — replace it
+                    GameLogger.Log(GameLogger.LogLevel.INFO,
+                        "Previous GameManager was destroyed (scene reload). Replacing singleton reference.");
                 }
             }
 
@@ -129,12 +131,17 @@ namespace Checkers.Core
                 turnManager = GetComponent<TurnManager>();
             if (networkGameManager == null)
                 networkGameManager = GetComponent<NetworkGameManager>();
+
+            Debug.Log($"[GameManager] Awake completed. Instance set. GameObject: {gameObject.name}");
         }
 
         private void OnDestroy()
         {
+            // Only clear the static reference if WE are the current instance
             if (_instance == this)
                 _instance = null;
+
+            Debug.Log("[GameManager] OnDestroy called. Singleton reference cleared.");
         }
 
         #endregion
@@ -176,7 +183,9 @@ namespace Checkers.Core
         {
             if (!_gameActive)
             {
-                GameLogger.Log(GameLogger.LogLevel.WARN, "EndGame called but game is not active.");
+                GameLogger.Log(GameLogger.LogLevel.WARN, "EndGame called but game is already ended. Firing event anyway.");
+                // Still fire the event — UI needs to know even on late calls
+                OnGameEnd?.Invoke(winnerActorNumber);
                 return;
             }
 
@@ -197,14 +206,29 @@ namespace Checkers.Core
 
             OnTurnChanged?.Invoke(actorNumber);
 
-            // Check win condition after turn change
-            int[] activePlayers = turnManager.GetPlayerActorNumbers();
-            int winner = WinConditionChecker.CheckWinCondition(
-                boardManager.BoardState, activePlayers, gameSettings);
+            // Check win condition after turn change (only MasterClient to avoid dual processing)
+            if (!Photon.Pun.PhotonNetwork.IsMasterClient)
+                return;
 
-            if (winner != -1)
+            // WinConditionChecker uses playerOwner indices (1, 2, ...) — NOT actor numbers.
+            // The board stores pieces with playerOwner = (index in sorted actor array + 1).
+            int[] actorNumbers = turnManager.GetPlayerActorNumbers();
+            if (actorNumbers == null || actorNumbers.Length < 2)
+                return;
+
+            // Build player owner index array: [1, 2, ...N]
+            int[] playerOwners = new int[actorNumbers.Length];
+            for (int i = 0; i < actorNumbers.Length; i++)
+                playerOwners[i] = i + 1;
+
+            int winnerOwnerIndex = WinConditionChecker.CheckWinCondition(
+                boardManager.BoardState, playerOwners, gameSettings);
+
+            if (winnerOwnerIndex != -1)
             {
-                EndGame(winner);
+                // Convert playerOwner index back to actor number
+                int winnerActorNumber = actorNumbers[winnerOwnerIndex - 1];
+                networkGameManager.SendGameOver(winnerActorNumber);
             }
         }
 

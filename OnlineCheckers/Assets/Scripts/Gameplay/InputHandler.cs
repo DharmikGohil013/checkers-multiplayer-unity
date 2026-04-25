@@ -8,7 +8,7 @@ using Checkers.Utilities;
 namespace Checkers.Gameplay
 {
     /// <summary>
-    /// Handles player input via piece and cell click events.
+    /// Handles player input via centralized raycasting (works on PC + Mobile).
     /// Implements a state machine: IDLE → PIECE_SELECTED → WAITING_FOR_NETWORK.
     /// Prevents input when it's not the local player's turn.
     /// </summary>
@@ -37,6 +37,7 @@ namespace Checkers.Gameplay
         private BoardManager _boardManager;
         private TurnManager _turnManager;
         private NetworkGameManager _networkGameManager;
+        private Camera _mainCamera;
 
         // Colors
         private readonly Color _moveHighlightColor = new Color(0.2f, 0.8f, 0.2f, 0.5f);
@@ -62,9 +63,7 @@ namespace Checkers.Gameplay
                 _networkGameManager = _gameManager.NetworkGameManager;
             }
 
-            // Subscribe to events
-            CheckersPiece.OnPieceClicked += HandlePieceClicked;
-            BoardCell.OnCellClicked += HandleCellClicked;
+            _mainCamera = Camera.main;
 
             // Listen for turn changes to reset state
             if (_gameManager != null)
@@ -76,14 +75,91 @@ namespace Checkers.Gameplay
 
         private void OnDestroy()
         {
-            // Unsubscribe from events
-            CheckersPiece.OnPieceClicked -= HandlePieceClicked;
-            BoardCell.OnCellClicked -= HandleCellClicked;
-
             if (_gameManager != null)
             {
                 _gameManager.OnTurnChanged -= HandleTurnChanged;
                 _gameManager.OnGameEnd -= HandleGameEnd;
+            }
+        }
+
+        /// <summary>
+        /// Centralized input detection — replaces OnMouseDown on individual objects.
+        /// Works on both PC (mouse) and Mobile (touch).
+        /// </summary>
+        private void Update()
+        {
+            if (!CanProcessInput())
+                return;
+
+            // Detect click/tap
+            bool inputDown = false;
+            Vector3 screenPos = Vector3.zero;
+
+#if UNITY_EDITOR || UNITY_STANDALONE
+            // Mouse input for PC/Editor
+            if (Input.GetMouseButtonDown(0))
+            {
+                inputDown = true;
+                screenPos = Input.mousePosition;
+            }
+#endif
+
+            // Touch input for mobile (also works in editor with touch simulation)
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    inputDown = true;
+                    screenPos = touch.position;
+                }
+            }
+
+            if (!inputDown)
+                return;
+
+            // Ensure camera is available
+            if (_mainCamera == null)
+            {
+                _mainCamera = Camera.main;
+                if (_mainCamera == null) return;
+            }
+
+            // Convert screen position to world position
+            Vector2 worldPos = _mainCamera.ScreenToWorldPoint(screenPos);
+
+            // Raycast to find what was clicked — check pieces FIRST (higher sorting order)
+            RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero);
+
+            CheckersPiece hitPiece = null;
+            BoardCell hitCell = null;
+
+            // Sort by priority: pieces first, then cells
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if (hitPiece == null)
+                {
+                    CheckersPiece piece = hits[i].collider.GetComponent<CheckersPiece>();
+                    if (piece != null)
+                        hitPiece = piece;
+                }
+
+                if (hitCell == null)
+                {
+                    BoardCell cell = hits[i].collider.GetComponent<BoardCell>();
+                    if (cell != null)
+                        hitCell = cell;
+                }
+            }
+
+            // Process the hit
+            if (hitPiece != null)
+            {
+                HandlePieceClicked(hitPiece);
+            }
+            else if (hitCell != null)
+            {
+                HandleCellClicked(hitCell);
             }
         }
 
@@ -203,7 +279,7 @@ namespace Checkers.Gameplay
             List<MoveData> moves = _boardManager.GetValidMoves(piece.Row, piece.Col);
 
             // Apply force capture filter across all player pieces
-            if (_gameManager.GameSettings.forceCapture)
+            if (_gameManager.GameSettings != null && _gameManager.GameSettings.forceCapture)
             {
                 int localOwner = GetLocalPlayerOwnerIndex();
                 List<MoveData> allMoves = _boardManager.GetAllValidMovesForPlayer(localOwner);
@@ -309,7 +385,7 @@ namespace Checkers.Gameplay
 
                 // Check promotion
                 PieceData movedPiece = _boardManager.BoardState[move.toRow, move.toCol];
-                if (!movedPiece.isKing && _gameManager.GameSettings.kingPromotion)
+                if (!movedPiece.isKing && _gameManager.GameSettings != null && _gameManager.GameSettings.kingPromotion)
                 {
                     if (CheckersRules.CanPromoteToKing(move.toRow, movedPiece.playerOwner, _boardManager.BoardSize))
                     {

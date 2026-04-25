@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
@@ -21,6 +20,7 @@ namespace Checkers.Network
         private GameManager _gameManager;
         private BoardManager _boardManager;
         private TurnManager _turnManager;
+        private bool _gameInitialized = false;
 
         #endregion
 
@@ -33,17 +33,40 @@ namespace Checkers.Network
 
         private void Start()
         {
+            CacheReferences();
+
+            // If MasterClient, initialize the game
+            if (PhotonNetwork.IsMasterClient)
+            {
+                InitializeGame();
+            }
+        }
+
+        /// <summary>
+        /// Re-cache references in case they were lost (e.g., after scene reload).
+        /// </summary>
+        private void CacheReferences()
+        {
             _gameManager = GameManager.Instance;
             if (_gameManager != null)
             {
                 _boardManager = _gameManager.BoardManager;
                 _turnManager = _gameManager.TurnManager;
             }
-
-            // If MasterClient, initialize the game
-            if (PhotonNetwork.IsMasterClient)
+            else
             {
-                InitializeGame();
+                Debug.LogError("[NetworkGameManager] GameManager.Instance is null! Ensure GameManagers object exists in GameScene.");
+            }
+        }
+
+        /// <summary>
+        /// Ensures references are valid. Call before any operation that needs them.
+        /// </summary>
+        private void EnsureReferences()
+        {
+            if (_gameManager == null || _boardManager == null || _turnManager == null)
+            {
+                CacheReferences();
             }
         }
 
@@ -81,6 +104,8 @@ namespace Checkers.Network
         [PunRPC]
         private void RPC_InitializeGame(int[] actorNumbers)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"RPC_InitializeGame received. Players: [{string.Join(", ", actorNumbers)}]");
 
@@ -89,6 +114,8 @@ namespace Checkers.Network
 
             if (_gameManager != null)
                 _gameManager.StartGame();
+
+            _gameInitialized = true;
         }
 
         #endregion
@@ -101,7 +128,9 @@ namespace Checkers.Network
         /// </summary>
         public void SendMove(MoveData move)
         {
-            if (!_turnManager.IsLocalPlayerTurn())
+            EnsureReferences();
+
+            if (_turnManager == null || !_turnManager.IsLocalPlayerTurn())
             {
                 GameLogger.Log(GameLogger.LogLevel.WARN, "SendMove called but it's not local player's turn.");
                 return;
@@ -123,6 +152,8 @@ namespace Checkers.Network
         private void RPC_ExecuteMove(int fromRow, int fromCol, int toRow, int toCol,
             int captureRow, int captureCol, PhotonMessageInfo info)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"RPC_ExecuteMove from Actor {info.Sender.ActorNumber}: " +
                 $"({fromRow},{fromCol}) → ({toRow},{toCol}), Capture: ({captureRow},{captureCol})");
@@ -144,7 +175,7 @@ namespace Checkers.Network
 
             // Check for king promotion
             PieceData movedPiece = _boardManager.BoardState[toRow, toCol];
-            if (!movedPiece.isKing && _gameManager.GameSettings.kingPromotion)
+            if (!movedPiece.isKing && _gameManager != null && _gameManager.GameSettings != null && _gameManager.GameSettings.kingPromotion)
             {
                 if (CheckersRules.CanPromoteToKing(toRow, movedPiece.playerOwner, _boardManager.BoardSize))
                 {
@@ -155,7 +186,7 @@ namespace Checkers.Network
             // Check for multi-jump
             if (captureRow >= 0 && captureCol >= 0)
             {
-                if (CheckersRules.IsMultiJumpAvailable(_boardManager.BoardState, toRow, toCol, _gameManager.GameSettings))
+                if (_gameManager != null && CheckersRules.IsMultiJumpAvailable(_boardManager.BoardState, toRow, toCol, _gameManager.GameSettings))
                 {
                     GameLogger.Log(GameLogger.LogLevel.INFO,
                         $"Multi-jump available at ({toRow},{toCol}). Turn continues.");
@@ -170,8 +201,11 @@ namespace Checkers.Network
                 // Sync board state to room properties for reconnect support
                 SyncFullState();
 
-                _photonView.RPC(nameof(RPC_EndTurn), RpcTarget.All,
-                    _turnManager.GetCurrentPlayer());
+                if (_turnManager != null)
+                {
+                    _photonView.RPC(nameof(RPC_EndTurn), RpcTarget.All,
+                        _turnManager.GetCurrentPlayer());
+                }
             }
         }
 
@@ -181,6 +215,8 @@ namespace Checkers.Network
         [PunRPC]
         private void RPC_EndTurn(int previousActorNumber, PhotonMessageInfo info)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"RPC_EndTurn received. Previous player: Actor {previousActorNumber}");
 
@@ -194,6 +230,8 @@ namespace Checkers.Network
         [PunRPC]
         private void RPC_GameOver(int winnerActorNumber, PhotonMessageInfo info)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"RPC_GameOver received. Winner: Actor {winnerActorNumber}");
 
@@ -216,6 +254,8 @@ namespace Checkers.Network
         [PunRPC]
         private void RPC_SyncBoardState(string serializedState, PhotonMessageInfo info)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"RPC_SyncBoardState received from Actor {info.Sender.ActorNumber}. " +
                 $"State length: {serializedState.Length}");
@@ -234,6 +274,8 @@ namespace Checkers.Network
         /// </summary>
         public void SyncFullState()
         {
+            EnsureReferences();
+
             if (_boardManager == null)
                 return;
 
@@ -258,6 +300,8 @@ namespace Checkers.Network
         /// </summary>
         public void SendFullStateToPlayer(Player targetPlayer)
         {
+            EnsureReferences();
+
             if (_boardManager == null)
                 return;
 
@@ -274,10 +318,15 @@ namespace Checkers.Network
 
         public override void OnPlayerLeftRoom(Player otherPlayer)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"Player left during game: {otherPlayer.NickName} (Actor {otherPlayer.ActorNumber})");
 
             if (!PhotonNetwork.IsMasterClient)
+                return;
+
+            if (!_gameInitialized)
                 return;
 
             // Remove player from turn order
@@ -301,11 +350,13 @@ namespace Checkers.Network
 
         public override void OnPlayerEnteredRoom(Player newPlayer)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"Player re-entered during game: {newPlayer.NickName} (Actor {newPlayer.ActorNumber})");
 
             // If MasterClient, send current state to reconnected player
-            if (PhotonNetwork.IsMasterClient)
+            if (PhotonNetwork.IsMasterClient && _gameInitialized)
             {
                 SendFullStateToPlayer(newPlayer);
             }
@@ -313,6 +364,8 @@ namespace Checkers.Network
 
         public override void OnMasterClientSwitched(Player newMasterClient)
         {
+            EnsureReferences();
+
             GameLogger.Log(GameLogger.LogLevel.WARN,
                 $"MasterClient switched to: {newMasterClient.NickName} (Actor {newMasterClient.ActorNumber})");
 

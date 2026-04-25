@@ -54,10 +54,8 @@ namespace Checkers.Gameplay
             CreateHighlightRenderer();
         }
 
-        private void OnMouseDown()
-        {
-            OnCellClicked?.Invoke(this);
-        }
+        // NOTE: OnMouseDown removed — input is now handled centrally by InputHandler.Update()
+        // using Physics2D.RaycastAll, which works on both PC and mobile devices.
 
         #endregion
 

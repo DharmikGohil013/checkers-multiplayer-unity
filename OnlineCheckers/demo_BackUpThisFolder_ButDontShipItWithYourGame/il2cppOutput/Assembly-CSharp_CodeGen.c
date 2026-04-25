@@ -60,6 +60,7 @@ extern void LobbyUIController_OnDestroy_m64BCB096D614D8620838CCEEF37A23B4585102E
 extern void LobbyUIController__ctor_mA380506938D845F6D9106B2ECEF04E27EC655585 (void);
 extern void UIManager_get_Instance_mE3AF99E17AE277BBFB4D1F204F6D2F745A1482BA (void);
 extern void UIManager_Awake_m583D1E9B259A73460D7ED441F3AD48B3B1472F39 (void);
+extern void UIManager_SetupResignButtons_mC1E09F113D684F4CAB6B920BDEDBC4876116895C (void);
 extern void UIManager_OnDestroy_mD6033D6F4C8C76DD22250C811BB800F89551EB02 (void);
 extern void UIManager_ShowPanel_m58D55137681D8035D1AA2148EDB25D4A49A36AD8 (void);
 extern void UIManager_HideAllPanels_m58E753F8FE7B6392A69ED220FBC99680BA5E6EC0 (void);
@@ -68,6 +69,11 @@ extern void UIManager_UpdateTurnIndicator_mEB0DB53F7ADFA0F8C1AD12E350D1BE87EB347
 extern void UIManager_UpdateTimerDisplay_m55DE5C070F364E6E16298F4842352B2CA2E1C344 (void);
 extern void UIManager_HideTimer_m27AA033733213032795F2E42D1A9C81D0704D8C3 (void);
 extern void UIManager_ShowGameOver_m43303AA3C289DE2B5B8C75CD3BF96C63D814F745 (void);
+extern void UIManager_OnPlayAgainClicked_mD3A7E5CE5DA786A6769461A22FEA1D887BED4D41 (void);
+extern void UIManager_OnQuitClicked_mE37B79B853FABF74043E3AE2534219157B0D4154 (void);
+extern void UIManager_ShowResignConfirmation_m682B82D7D39D83CE1924525B50A373A1DA265147 (void);
+extern void UIManager_ConfirmResign_m8EB6F84F4EA04888908FAF654C9204C3C0A5088C (void);
+extern void UIManager_CancelResign_m360246F1E8F262F7981EF109231F70A7707A0CBC (void);
 extern void UIManager_ShowReconnecting_m61CCBEE908427E9693B2047E3F8C2A87160269F7 (void);
 extern void UIManager_ShowConnectionFailed_m9480E91DD466D7E9B20B76AD83E9F0B6086BF0F7 (void);
 extern void UIManager_AnimateReconnectingText_m59B977957332F4B3A387A39111375BB16F0E75BA (void);
@@ -76,18 +82,18 @@ extern void UIManager_UpdatePieceCount_m15698D6B2BBEF8AE774C4E96306CA137CE4663C6
 extern void UIManager_ShowInvalidMoveFlash_m4AC50D620C75AE53371BA417D950ED85FDA30B05 (void);
 extern void UIManager_FlashCoroutine_mDFEFE4696C8762725B2CF1C7BC03F10C4ECF2B0D (void);
 extern void UIManager__ctor_m53C0E69718AD906010549016A26070FFB7499F4F (void);
-extern void U3CAnimateReconnectingTextU3Ed__32__ctor_m0273E42E5DAEF75DEF68CE8B3916A2DC12A9EA04 (void);
-extern void U3CAnimateReconnectingTextU3Ed__32_System_IDisposable_Dispose_m41B50F7F5D8EC6737455154C5B34C61833120914 (void);
-extern void U3CAnimateReconnectingTextU3Ed__32_MoveNext_m0409C8277AED8EC3CE7794E1CE7FD7ABBFE11E26 (void);
-extern void U3CAnimateReconnectingTextU3Ed__32_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m0FA3DB8A7F35D118300E46E2386E7A8374537950 (void);
-extern void U3CAnimateReconnectingTextU3Ed__32_System_Collections_IEnumerator_Reset_m8C23931469D1FFE28AB7D89DBC8263323B4F31E9 (void);
-extern void U3CAnimateReconnectingTextU3Ed__32_System_Collections_IEnumerator_get_Current_m198A7F2CDE0D8D999FA00624BA311D05047BA0BB (void);
-extern void U3CFlashCoroutineU3Ed__36__ctor_m7C16BCD4E8324C027872107D84C40ED3D74B4273 (void);
-extern void U3CFlashCoroutineU3Ed__36_System_IDisposable_Dispose_m438DF3C531BAF96DFF20CC4A7D2883936B464EE0 (void);
-extern void U3CFlashCoroutineU3Ed__36_MoveNext_m9FA0724A5BCCE35F68AB9D8E0D45A72C9D23F0A1 (void);
-extern void U3CFlashCoroutineU3Ed__36_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mB580B40D1F71A51DE56634C1CF15EAF1AB63C581 (void);
-extern void U3CFlashCoroutineU3Ed__36_System_Collections_IEnumerator_Reset_m9F8D81152A2BF722132DF61B4598F7CA1F09B00C (void);
-extern void U3CFlashCoroutineU3Ed__36_System_Collections_IEnumerator_get_Current_mB4603E8496896258EBCA06AF412D6D1A4D74FCDF (void);
+extern void U3CAnimateReconnectingTextU3Ed__43__ctor_m1A5DFE03D9DB5FA6C9CE249FCE0ED8767042B8CA (void);
+extern void U3CAnimateReconnectingTextU3Ed__43_System_IDisposable_Dispose_m3113F19BAA6BA68B72B01CB601D2FA9C3FE065C1 (void);
+extern void U3CAnimateReconnectingTextU3Ed__43_MoveNext_mECB6D39E7932B33BAAADC0B2CB17DB00E6C794A0 (void);
+extern void U3CAnimateReconnectingTextU3Ed__43_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mE1784EA60BAF51D66F771D7820F7F7AD03554A5B (void);
+extern void U3CAnimateReconnectingTextU3Ed__43_System_Collections_IEnumerator_Reset_m480E53F3715EEA8C7CFDD813CFB354AA15D73FE1 (void);
+extern void U3CAnimateReconnectingTextU3Ed__43_System_Collections_IEnumerator_get_Current_m4BF6D435E67AF29CDA97DC755C1A0F409BE8D084 (void);
+extern void U3CFlashCoroutineU3Ed__47__ctor_m0FF41B20BA38DD2CCD7A592423BF21D7E0379115 (void);
+extern void U3CFlashCoroutineU3Ed__47_System_IDisposable_Dispose_mE44050A06CF918441D8188DA432C1EEE0F70ACB6 (void);
+extern void U3CFlashCoroutineU3Ed__47_MoveNext_m8977E396C002A7568735719E6C2CD4E89DEE7BFE (void);
+extern void U3CFlashCoroutineU3Ed__47_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m523B68C58067E3F26884E34A8E4FD21CACAE9210 (void);
+extern void U3CFlashCoroutineU3Ed__47_System_Collections_IEnumerator_Reset_m22FB42D03F675C1EAB7931B44E425D5D273035EC (void);
+extern void U3CFlashCoroutineU3Ed__47_System_Collections_IEnumerator_get_Current_m624D66D0D33D34B7C544032AD536EE2609EE24F4 (void);
 extern void BoardConfig_GetPiecesPerPlayer_m0924D41C19C2700C4A18F1E2D60F5CF6C2E2FD1D (void);
 extern void BoardConfig_OnValidate_m54EE1B1DA8D411A0EFFE356BBE9805481C568122 (void);
 extern void BoardConfig__ctor_m5E919478D1192E7B25B747E4A4BB38D709B198B6 (void);
@@ -96,6 +102,8 @@ extern void PieceConfig_GetPlayerColor_m5C442D9AE1284E3DCF704781D1CCAE3483A766EF
 extern void PieceConfig__ctor_m5AEBE92C69F0CCAE5DF209AED02F499CAF7C5056 (void);
 extern void NetworkGameManager_Awake_mD11D957CD608D163668CAE96D416FC66A7011713 (void);
 extern void NetworkGameManager_Start_m3782EBF5159BD0BAC156E15E21CB4002AE3E8BF3 (void);
+extern void NetworkGameManager_CacheReferences_m561B01E218605343345E5FBA46456044C30091D6 (void);
+extern void NetworkGameManager_EnsureReferences_m6467FB7790A733B35D82F8045DAD1DD9CF4C5D02 (void);
 extern void NetworkGameManager_InitializeGame_mFF779627FE9935DA3163ECA74CD50ECBE8146692 (void);
 extern void NetworkGameManager_RPC_InitializeGame_mE52F842654263DB54EFAD75FC6E540AB7DC7D93B (void);
 extern void NetworkGameManager_SendMove_mFD351B729BCB37A38AF3D95D0A758AFF3F02A95D (void);
@@ -155,7 +163,6 @@ extern void BoardCell_get_IsPlayable_m13630B69E5965CDF92928090E7F35A5967FCDB06 (
 extern void BoardCell_add_OnCellClicked_m2851B9333AC7649E8F4E39438CDCEB5536FDD782 (void);
 extern void BoardCell_remove_OnCellClicked_mB80EE7CB3D09996E00C5ED189AA995A84367EB36 (void);
 extern void BoardCell_Awake_mAC3E4C767153E101C086A54374CE9A52161AF0E3 (void);
-extern void BoardCell_OnMouseDown_m1562DA73C49D9F7D83420F672C7392485EA55941 (void);
 extern void BoardCell_Initialize_m9DF0D0333AB2A37527DDB2AC603802FAC00AD21C (void);
 extern void BoardCell_SetHighlight_m18F0B09BDCB7CDC7DB995C30735C68E59F45B414 (void);
 extern void BoardCell_SetHighlight_mEDC490A8F8D26D871F1AF55792D61B35FA6E92F7 (void);
@@ -174,7 +181,6 @@ extern void CheckersPiece_get_Col_mEF158A5AAD376E69E005DEC607D13DEDFD593B7E (voi
 extern void CheckersPiece_add_OnPieceClicked_mCB454A56886CF5E00FB83185A4010A966EF5EDEA (void);
 extern void CheckersPiece_remove_OnPieceClicked_m3DF42333309EF57D70EC2E86FB5D353D1F26792E (void);
 extern void CheckersPiece_Awake_m1F8207689D6B88D3429FB0E438957CC4B7461175 (void);
-extern void CheckersPiece_OnMouseDown_m23EE40E4BF37A2E2D73761C1033157C77110D5A3 (void);
 extern void CheckersPiece_Initialize_m26A809AF67E5EA1F8B7F8777D5B91A4989DBD18B (void);
 extern void CheckersPiece_MoveTo_m7B697EA8AC655EF6970D2BC152F1C46B9CBC1A7E (void);
 extern void CheckersPiece_MoveAnimationCoroutine_m65F4274F13EB47A55852AB65CCE3BB446B31F946 (void);
@@ -183,21 +189,22 @@ extern void CheckersPiece_KingPromotionAnimation_mE59CF2A4EE5A70C1BFC704C75B977F
 extern void CheckersPiece_SetHighlight_m2B7ED82D48F9FFD0627DAA5DB50DAF620F1AE108 (void);
 extern void CheckersPiece_ReturnToPool_m00821AEFCB50747D0B092E9EF3D0FBDBD1C87BC6 (void);
 extern void CheckersPiece__ctor_mEDD17F6CB339F789D292F3293786A94E7909E167 (void);
-extern void U3CKingPromotionAnimationU3Ed__26__ctor_mC73CBDEDD6D891661EE54A97CAE26CDCD35F8F12 (void);
-extern void U3CKingPromotionAnimationU3Ed__26_System_IDisposable_Dispose_m233A9B41F7D3D5F77EAED7D073B7D6387371495F (void);
-extern void U3CKingPromotionAnimationU3Ed__26_MoveNext_mE4FCF8A813AD60270671B4B4C3CB50999B6FD9CA (void);
-extern void U3CKingPromotionAnimationU3Ed__26_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mED4A30AAC54AE6B0B16D8B5E022C4996CD761FD7 (void);
-extern void U3CKingPromotionAnimationU3Ed__26_System_Collections_IEnumerator_Reset_m9668723D00B7210049086A077999D3B60135B933 (void);
-extern void U3CKingPromotionAnimationU3Ed__26_System_Collections_IEnumerator_get_Current_m89D5D8D09B16375559C0497F9E1174E8E556D3BD (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24__ctor_mF87FE0B80F98E8A6BEB2DC68FC6FD385152E6F17 (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24_System_IDisposable_Dispose_m899248EE535A93A75E3BC0DFE5AF3C284C4312DB (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24_MoveNext_m94BAE7B251B9662D1A2F668C067C1E3660EB44F4 (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mE8245C3987B6CBB5D9BF43019215085FF0D7CC88 (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24_System_Collections_IEnumerator_Reset_mB42A75BB9DBE8A4CB16DB959B65F1BE8B8A39230 (void);
-extern void U3CMoveAnimationCoroutineU3Ed__24_System_Collections_IEnumerator_get_Current_mAD952F8885447AF7FDF07BD3BDFC5465093F8502 (void);
+extern void U3CKingPromotionAnimationU3Ed__25__ctor_mC835B2D8A5BC9709472436FC13E35D2BE15BF60F (void);
+extern void U3CKingPromotionAnimationU3Ed__25_System_IDisposable_Dispose_m456F00475E028B24B9DBD9E58263066FCD5A3803 (void);
+extern void U3CKingPromotionAnimationU3Ed__25_MoveNext_m8CEA9CEEC3B279D476ABB12FDC75963133AF2FA6 (void);
+extern void U3CKingPromotionAnimationU3Ed__25_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA8FD60A1658DAF5EE18FB0CEFA6ABC16BA240BF6 (void);
+extern void U3CKingPromotionAnimationU3Ed__25_System_Collections_IEnumerator_Reset_mEE60CD520EDC75CB04546A0A3D4ABB4CF4F4F0D0 (void);
+extern void U3CKingPromotionAnimationU3Ed__25_System_Collections_IEnumerator_get_Current_m04A43A86DF470854FAD25E9FFF770FB86DE1DE95 (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23__ctor_m620A4CDBC5207F46A37D900AE9AF844380AF7EF1 (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23_System_IDisposable_Dispose_m8C415FC128F1F86FAA1B86AB54D5E3C455F2E3A8 (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23_MoveNext_m377A4A79958AB95C0A7385BCB09FA7958A14EC6B (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mB0DC0B9B6AA2D93A34101F2BDF06CE50076693C7 (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23_System_Collections_IEnumerator_Reset_m91E3089395F35097E447DD48431339035F425AFD (void);
+extern void U3CMoveAnimationCoroutineU3Ed__23_System_Collections_IEnumerator_get_Current_m4C75273C0E148814B603D9AE42BD7FEF12504471 (void);
 extern void InputHandler_Awake_m53FAC61E5636FEAD0042EB652B430428BEB9BA31 (void);
 extern void InputHandler_Start_mB84C5E3CC83076B60F4A57850B5A89F633958AB3 (void);
 extern void InputHandler_OnDestroy_m87F3AAE74E4619B3EADD4F578EDD985AA65F0C2C (void);
+extern void InputHandler_Update_mE3BA632062473079404EA86F4590818400267DAA (void);
 extern void InputHandler_HandlePieceClicked_mCE34D68C867B9B9C63998B9416C1C27BDA6D6874 (void);
 extern void InputHandler_HandleCellClicked_mF582316F89ACC5B663A8F1CC314456FD40880A80 (void);
 extern void InputHandler_HandleTurnChanged_m9B707A78A20903FBDC13B34A7B671F0B1ECC97F7 (void);
@@ -298,6 +305,7 @@ extern void TurnManager_remove_OnTurnTimeout_m84D6189FABC0C27F33C1CAC1E39CD50368
 extern void TurnManager_add_OnTimerUpdate_mB70AA4988C91E7CD469EB0A9E02D8581C6E315C1 (void);
 extern void TurnManager_remove_OnTimerUpdate_m10BF37145FAB902ACFE70269EF155A9937BFF8E5 (void);
 extern void TurnManager_Awake_mC3509A2084909E7DBBC11CEDFECC61510A8B7050 (void);
+extern void TurnManager_EnsureSettings_m82B202847977330F4F4476ADD8276C166469B613 (void);
 extern void TurnManager_Update_mAB2652C8AC274B0BF65E2BA1E6A13BB6761E6A6F (void);
 extern void TurnManager_InitializePlayers_m1C9BFEB88C267F0971561C1E42827B06577C2FE7 (void);
 extern void TurnManager_NextTurn_m4BD269703654D43D68E2C26658C47FCF7F993CBA (void);
@@ -399,7 +407,7 @@ extern void TextToggleIsOnTransition_OnValueChanged_m2130BC0EA8E9ACBE55A1DB8FBEF
 extern void TextToggleIsOnTransition_OnPointerEnter_m857EAEB61AD055B19C27B7DE5BBFD0CAEBF2C41D (void);
 extern void TextToggleIsOnTransition_OnPointerExit_m19C44B773913ECEB572F90DFC2ACB123E4D9E50F (void);
 extern void TextToggleIsOnTransition__ctor_mC67BFBF0D3B3D64CDCA7F3A72AD6A8789AF07BDC (void);
-static Il2CppMethodPointer s_methodPointers[392] = 
+static Il2CppMethodPointer s_methodPointers[400] = 
 {
 	WinConditionChecker_CheckWinCondition_m52FEF24352BF371EBE4A6733B4C0676A0E8570AB,
 	WinConditionChecker_HasLost_m6A0EBA30FE4DFD1C48D111B9AED138EC41E78251,
@@ -454,6 +462,7 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	LobbyUIController__ctor_mA380506938D845F6D9106B2ECEF04E27EC655585,
 	UIManager_get_Instance_mE3AF99E17AE277BBFB4D1F204F6D2F745A1482BA,
 	UIManager_Awake_m583D1E9B259A73460D7ED441F3AD48B3B1472F39,
+	UIManager_SetupResignButtons_mC1E09F113D684F4CAB6B920BDEDBC4876116895C,
 	UIManager_OnDestroy_mD6033D6F4C8C76DD22250C811BB800F89551EB02,
 	UIManager_ShowPanel_m58D55137681D8035D1AA2148EDB25D4A49A36AD8,
 	UIManager_HideAllPanels_m58E753F8FE7B6392A69ED220FBC99680BA5E6EC0,
@@ -462,6 +471,11 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	UIManager_UpdateTimerDisplay_m55DE5C070F364E6E16298F4842352B2CA2E1C344,
 	UIManager_HideTimer_m27AA033733213032795F2E42D1A9C81D0704D8C3,
 	UIManager_ShowGameOver_m43303AA3C289DE2B5B8C75CD3BF96C63D814F745,
+	UIManager_OnPlayAgainClicked_mD3A7E5CE5DA786A6769461A22FEA1D887BED4D41,
+	UIManager_OnQuitClicked_mE37B79B853FABF74043E3AE2534219157B0D4154,
+	UIManager_ShowResignConfirmation_m682B82D7D39D83CE1924525B50A373A1DA265147,
+	UIManager_ConfirmResign_m8EB6F84F4EA04888908FAF654C9204C3C0A5088C,
+	UIManager_CancelResign_m360246F1E8F262F7981EF109231F70A7707A0CBC,
 	UIManager_ShowReconnecting_m61CCBEE908427E9693B2047E3F8C2A87160269F7,
 	UIManager_ShowConnectionFailed_m9480E91DD466D7E9B20B76AD83E9F0B6086BF0F7,
 	UIManager_AnimateReconnectingText_m59B977957332F4B3A387A39111375BB16F0E75BA,
@@ -470,18 +484,18 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	UIManager_ShowInvalidMoveFlash_m4AC50D620C75AE53371BA417D950ED85FDA30B05,
 	UIManager_FlashCoroutine_mDFEFE4696C8762725B2CF1C7BC03F10C4ECF2B0D,
 	UIManager__ctor_m53C0E69718AD906010549016A26070FFB7499F4F,
-	U3CAnimateReconnectingTextU3Ed__32__ctor_m0273E42E5DAEF75DEF68CE8B3916A2DC12A9EA04,
-	U3CAnimateReconnectingTextU3Ed__32_System_IDisposable_Dispose_m41B50F7F5D8EC6737455154C5B34C61833120914,
-	U3CAnimateReconnectingTextU3Ed__32_MoveNext_m0409C8277AED8EC3CE7794E1CE7FD7ABBFE11E26,
-	U3CAnimateReconnectingTextU3Ed__32_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m0FA3DB8A7F35D118300E46E2386E7A8374537950,
-	U3CAnimateReconnectingTextU3Ed__32_System_Collections_IEnumerator_Reset_m8C23931469D1FFE28AB7D89DBC8263323B4F31E9,
-	U3CAnimateReconnectingTextU3Ed__32_System_Collections_IEnumerator_get_Current_m198A7F2CDE0D8D999FA00624BA311D05047BA0BB,
-	U3CFlashCoroutineU3Ed__36__ctor_m7C16BCD4E8324C027872107D84C40ED3D74B4273,
-	U3CFlashCoroutineU3Ed__36_System_IDisposable_Dispose_m438DF3C531BAF96DFF20CC4A7D2883936B464EE0,
-	U3CFlashCoroutineU3Ed__36_MoveNext_m9FA0724A5BCCE35F68AB9D8E0D45A72C9D23F0A1,
-	U3CFlashCoroutineU3Ed__36_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mB580B40D1F71A51DE56634C1CF15EAF1AB63C581,
-	U3CFlashCoroutineU3Ed__36_System_Collections_IEnumerator_Reset_m9F8D81152A2BF722132DF61B4598F7CA1F09B00C,
-	U3CFlashCoroutineU3Ed__36_System_Collections_IEnumerator_get_Current_mB4603E8496896258EBCA06AF412D6D1A4D74FCDF,
+	U3CAnimateReconnectingTextU3Ed__43__ctor_m1A5DFE03D9DB5FA6C9CE249FCE0ED8767042B8CA,
+	U3CAnimateReconnectingTextU3Ed__43_System_IDisposable_Dispose_m3113F19BAA6BA68B72B01CB601D2FA9C3FE065C1,
+	U3CAnimateReconnectingTextU3Ed__43_MoveNext_mECB6D39E7932B33BAAADC0B2CB17DB00E6C794A0,
+	U3CAnimateReconnectingTextU3Ed__43_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mE1784EA60BAF51D66F771D7820F7F7AD03554A5B,
+	U3CAnimateReconnectingTextU3Ed__43_System_Collections_IEnumerator_Reset_m480E53F3715EEA8C7CFDD813CFB354AA15D73FE1,
+	U3CAnimateReconnectingTextU3Ed__43_System_Collections_IEnumerator_get_Current_m4BF6D435E67AF29CDA97DC755C1A0F409BE8D084,
+	U3CFlashCoroutineU3Ed__47__ctor_m0FF41B20BA38DD2CCD7A592423BF21D7E0379115,
+	U3CFlashCoroutineU3Ed__47_System_IDisposable_Dispose_mE44050A06CF918441D8188DA432C1EEE0F70ACB6,
+	U3CFlashCoroutineU3Ed__47_MoveNext_m8977E396C002A7568735719E6C2CD4E89DEE7BFE,
+	U3CFlashCoroutineU3Ed__47_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m523B68C58067E3F26884E34A8E4FD21CACAE9210,
+	U3CFlashCoroutineU3Ed__47_System_Collections_IEnumerator_Reset_m22FB42D03F675C1EAB7931B44E425D5D273035EC,
+	U3CFlashCoroutineU3Ed__47_System_Collections_IEnumerator_get_Current_m624D66D0D33D34B7C544032AD536EE2609EE24F4,
 	BoardConfig_GetPiecesPerPlayer_m0924D41C19C2700C4A18F1E2D60F5CF6C2E2FD1D,
 	BoardConfig_OnValidate_m54EE1B1DA8D411A0EFFE356BBE9805481C568122,
 	BoardConfig__ctor_m5E919478D1192E7B25B747E4A4BB38D709B198B6,
@@ -490,6 +504,8 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	PieceConfig__ctor_m5AEBE92C69F0CCAE5DF209AED02F499CAF7C5056,
 	NetworkGameManager_Awake_mD11D957CD608D163668CAE96D416FC66A7011713,
 	NetworkGameManager_Start_m3782EBF5159BD0BAC156E15E21CB4002AE3E8BF3,
+	NetworkGameManager_CacheReferences_m561B01E218605343345E5FBA46456044C30091D6,
+	NetworkGameManager_EnsureReferences_m6467FB7790A733B35D82F8045DAD1DD9CF4C5D02,
 	NetworkGameManager_InitializeGame_mFF779627FE9935DA3163ECA74CD50ECBE8146692,
 	NetworkGameManager_RPC_InitializeGame_mE52F842654263DB54EFAD75FC6E540AB7DC7D93B,
 	NetworkGameManager_SendMove_mFD351B729BCB37A38AF3D95D0A758AFF3F02A95D,
@@ -549,7 +565,6 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	BoardCell_add_OnCellClicked_m2851B9333AC7649E8F4E39438CDCEB5536FDD782,
 	BoardCell_remove_OnCellClicked_mB80EE7CB3D09996E00C5ED189AA995A84367EB36,
 	BoardCell_Awake_mAC3E4C767153E101C086A54374CE9A52161AF0E3,
-	BoardCell_OnMouseDown_m1562DA73C49D9F7D83420F672C7392485EA55941,
 	BoardCell_Initialize_m9DF0D0333AB2A37527DDB2AC603802FAC00AD21C,
 	BoardCell_SetHighlight_m18F0B09BDCB7CDC7DB995C30735C68E59F45B414,
 	BoardCell_SetHighlight_mEDC490A8F8D26D871F1AF55792D61B35FA6E92F7,
@@ -568,7 +583,6 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	CheckersPiece_add_OnPieceClicked_mCB454A56886CF5E00FB83185A4010A966EF5EDEA,
 	CheckersPiece_remove_OnPieceClicked_m3DF42333309EF57D70EC2E86FB5D353D1F26792E,
 	CheckersPiece_Awake_m1F8207689D6B88D3429FB0E438957CC4B7461175,
-	CheckersPiece_OnMouseDown_m23EE40E4BF37A2E2D73761C1033157C77110D5A3,
 	CheckersPiece_Initialize_m26A809AF67E5EA1F8B7F8777D5B91A4989DBD18B,
 	CheckersPiece_MoveTo_m7B697EA8AC655EF6970D2BC152F1C46B9CBC1A7E,
 	CheckersPiece_MoveAnimationCoroutine_m65F4274F13EB47A55852AB65CCE3BB446B31F946,
@@ -577,21 +591,22 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	CheckersPiece_SetHighlight_m2B7ED82D48F9FFD0627DAA5DB50DAF620F1AE108,
 	CheckersPiece_ReturnToPool_m00821AEFCB50747D0B092E9EF3D0FBDBD1C87BC6,
 	CheckersPiece__ctor_mEDD17F6CB339F789D292F3293786A94E7909E167,
-	U3CKingPromotionAnimationU3Ed__26__ctor_mC73CBDEDD6D891661EE54A97CAE26CDCD35F8F12,
-	U3CKingPromotionAnimationU3Ed__26_System_IDisposable_Dispose_m233A9B41F7D3D5F77EAED7D073B7D6387371495F,
-	U3CKingPromotionAnimationU3Ed__26_MoveNext_mE4FCF8A813AD60270671B4B4C3CB50999B6FD9CA,
-	U3CKingPromotionAnimationU3Ed__26_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mED4A30AAC54AE6B0B16D8B5E022C4996CD761FD7,
-	U3CKingPromotionAnimationU3Ed__26_System_Collections_IEnumerator_Reset_m9668723D00B7210049086A077999D3B60135B933,
-	U3CKingPromotionAnimationU3Ed__26_System_Collections_IEnumerator_get_Current_m89D5D8D09B16375559C0497F9E1174E8E556D3BD,
-	U3CMoveAnimationCoroutineU3Ed__24__ctor_mF87FE0B80F98E8A6BEB2DC68FC6FD385152E6F17,
-	U3CMoveAnimationCoroutineU3Ed__24_System_IDisposable_Dispose_m899248EE535A93A75E3BC0DFE5AF3C284C4312DB,
-	U3CMoveAnimationCoroutineU3Ed__24_MoveNext_m94BAE7B251B9662D1A2F668C067C1E3660EB44F4,
-	U3CMoveAnimationCoroutineU3Ed__24_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mE8245C3987B6CBB5D9BF43019215085FF0D7CC88,
-	U3CMoveAnimationCoroutineU3Ed__24_System_Collections_IEnumerator_Reset_mB42A75BB9DBE8A4CB16DB959B65F1BE8B8A39230,
-	U3CMoveAnimationCoroutineU3Ed__24_System_Collections_IEnumerator_get_Current_mAD952F8885447AF7FDF07BD3BDFC5465093F8502,
+	U3CKingPromotionAnimationU3Ed__25__ctor_mC835B2D8A5BC9709472436FC13E35D2BE15BF60F,
+	U3CKingPromotionAnimationU3Ed__25_System_IDisposable_Dispose_m456F00475E028B24B9DBD9E58263066FCD5A3803,
+	U3CKingPromotionAnimationU3Ed__25_MoveNext_m8CEA9CEEC3B279D476ABB12FDC75963133AF2FA6,
+	U3CKingPromotionAnimationU3Ed__25_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA8FD60A1658DAF5EE18FB0CEFA6ABC16BA240BF6,
+	U3CKingPromotionAnimationU3Ed__25_System_Collections_IEnumerator_Reset_mEE60CD520EDC75CB04546A0A3D4ABB4CF4F4F0D0,
+	U3CKingPromotionAnimationU3Ed__25_System_Collections_IEnumerator_get_Current_m04A43A86DF470854FAD25E9FFF770FB86DE1DE95,
+	U3CMoveAnimationCoroutineU3Ed__23__ctor_m620A4CDBC5207F46A37D900AE9AF844380AF7EF1,
+	U3CMoveAnimationCoroutineU3Ed__23_System_IDisposable_Dispose_m8C415FC128F1F86FAA1B86AB54D5E3C455F2E3A8,
+	U3CMoveAnimationCoroutineU3Ed__23_MoveNext_m377A4A79958AB95C0A7385BCB09FA7958A14EC6B,
+	U3CMoveAnimationCoroutineU3Ed__23_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mB0DC0B9B6AA2D93A34101F2BDF06CE50076693C7,
+	U3CMoveAnimationCoroutineU3Ed__23_System_Collections_IEnumerator_Reset_m91E3089395F35097E447DD48431339035F425AFD,
+	U3CMoveAnimationCoroutineU3Ed__23_System_Collections_IEnumerator_get_Current_m4C75273C0E148814B603D9AE42BD7FEF12504471,
 	InputHandler_Awake_m53FAC61E5636FEAD0042EB652B430428BEB9BA31,
 	InputHandler_Start_mB84C5E3CC83076B60F4A57850B5A89F633958AB3,
 	InputHandler_OnDestroy_m87F3AAE74E4619B3EADD4F578EDD985AA65F0C2C,
+	InputHandler_Update_mE3BA632062473079404EA86F4590818400267DAA,
 	InputHandler_HandlePieceClicked_mCE34D68C867B9B9C63998B9416C1C27BDA6D6874,
 	InputHandler_HandleCellClicked_mF582316F89ACC5B663A8F1CC314456FD40880A80,
 	InputHandler_HandleTurnChanged_m9B707A78A20903FBDC13B34A7B671F0B1ECC97F7,
@@ -692,6 +707,7 @@ static Il2CppMethodPointer s_methodPointers[392] =
 	TurnManager_add_OnTimerUpdate_mB70AA4988C91E7CD469EB0A9E02D8581C6E315C1,
 	TurnManager_remove_OnTimerUpdate_m10BF37145FAB902ACFE70269EF155A9937BFF8E5,
 	TurnManager_Awake_mC3509A2084909E7DBBC11CEDFECC61510A8B7050,
+	TurnManager_EnsureSettings_m82B202847977330F4F4476ADD8276C166469B613,
 	TurnManager_Update_mAB2652C8AC274B0BF65E2BA1E6A13BB6761E6A6F,
 	TurnManager_InitializePlayers_m1C9BFEB88C267F0971561C1E42827B06577C2FE7,
 	TurnManager_NextTurn_m4BD269703654D43D68E2C26658C47FCF7F993CBA,
@@ -799,24 +815,24 @@ extern void PieceData__ctor_mACE16E03868137F1E887618DB6F5EF42F145AD19_AdjustorTh
 extern void MoveData__ctor_m07D324C5C50EC5FCAF900558AB17DF07A76B9315_AdjustorThunk (void);
 static Il2CppTokenAdjustorThunkPair s_adjustorThunks[3] = 
 {
-	{ 0x060000D9, PieceData_get_IsEmpty_m8BB2176E5A7ADDCF4E193F747CB83F6886C3C9D8_AdjustorThunk },
-	{ 0x060000DA, PieceData__ctor_mACE16E03868137F1E887618DB6F5EF42F145AD19_AdjustorThunk },
-	{ 0x060000DC, MoveData__ctor_m07D324C5C50EC5FCAF900558AB17DF07A76B9315_AdjustorThunk },
+	{ 0x060000E0, PieceData_get_IsEmpty_m8BB2176E5A7ADDCF4E193F747CB83F6886C3C9D8_AdjustorThunk },
+	{ 0x060000E1, PieceData__ctor_mACE16E03868137F1E887618DB6F5EF42F145AD19_AdjustorThunk },
+	{ 0x060000E3, MoveData__ctor_m07D324C5C50EC5FCAF900558AB17DF07A76B9315_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[392] = 
+static const int32_t s_InvokerIndices[400] = 
 {
-	18054,
-	16599,
-	19839,
-	17863,
+	18055,
+	16600,
+	19840,
+	17864,
 	14493,
 	14493,
 	14493,
-	25100,
+	25101,
 	14493,
-	18823,
-	21143,
-	25075,
+	18824,
+	21144,
+	25076,
 	14493,
 	14493,
 	14493,
@@ -856,7 +872,8 @@ static const int32_t s_InvokerIndices[392] =
 	14493,
 	14493,
 	14493,
-	24974,
+	24975,
+	14493,
 	14493,
 	14493,
 	11003,
@@ -866,6 +883,11 @@ static const int32_t s_InvokerIndices[392] =
 	11097,
 	14493,
 	5526,
+	14493,
+	14493,
+	14493,
+	14493,
+	14493,
 	10805,
 	14493,
 	14283,
@@ -891,6 +913,8 @@ static const int32_t s_InvokerIndices[392] =
 	14493,
 	14493,
 	8210,
+	14493,
+	14493,
 	14493,
 	14493,
 	14493,
@@ -942,24 +966,23 @@ static const int32_t s_InvokerIndices[392] =
 	14283,
 	14493,
 	14283,
-	20299,
-	20291,
-	19842,
+	20300,
+	20292,
+	19843,
 	14493,
 	5051,
 	14217,
 	14217,
 	14083,
-	23811,
-	23811,
-	14493,
+	23812,
+	23812,
 	14493,
 	2368,
 	4563,
 	10805,
 	14083,
 	14493,
-	24974,
+	24975,
 	14493,
 	14493,
 	14283,
@@ -969,9 +992,8 @@ static const int32_t s_InvokerIndices[392] =
 	14083,
 	14217,
 	14217,
-	23811,
-	23811,
-	14493,
+	23812,
+	23812,
 	14493,
 	1638,
 	5051,
@@ -993,6 +1015,7 @@ static const int32_t s_InvokerIndices[392] =
 	14283,
 	14493,
 	14283,
+	14493,
 	14493,
 	14493,
 	14493,
@@ -1023,7 +1046,7 @@ static const int32_t s_InvokerIndices[392] =
 	14493,
 	14083,
 	4963,
-	24992,
+	24993,
 	237,
 	14283,
 	14217,
@@ -1058,16 +1081,16 @@ static const int32_t s_InvokerIndices[392] =
 	8871,
 	4289,
 	14493,
-	17867,
-	17073,
-	17863,
+	17868,
+	17074,
+	17864,
+	16598,
+	17839,
 	16597,
-	17838,
-	16596,
-	23250,
-	17838,
-	25075,
-	24974,
+	23251,
+	17839,
+	25076,
+	24975,
 	14283,
 	14283,
 	14283,
@@ -1095,6 +1118,7 @@ static const int32_t s_InvokerIndices[392] =
 	11003,
 	11003,
 	11003,
+	14493,
 	14493,
 	14493,
 	11003,
@@ -1164,10 +1188,10 @@ static const int32_t s_InvokerIndices[392] =
 	14493,
 	14493,
 	14493,
-	25075,
-	24974,
-	24974,
-	24974,
+	25076,
+	24975,
+	24975,
+	24975,
 	14493,
 	11003,
 	14283,
@@ -1202,7 +1226,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	392,
+	400,
 	s_methodPointers,
 	3,
 	s_adjustorThunks,

@@ -109,7 +109,14 @@ namespace Checkers.UI
         private void SetupButtons()
         {
             if (resignButton != null)
+            {
                 resignButton.onClick.AddListener(OnResignClicked);
+                resignButton.interactable = true;
+            }
+            else
+            {
+                GameLogger.Log(GameLogger.LogLevel.WARN, "Resign button is NOT assigned in GameUIController!");
+            }
 
             if (playAgainButton != null)
                 playAgainButton.onClick.AddListener(OnPlayAgainClicked);
@@ -149,20 +156,34 @@ namespace Checkers.UI
         private void HandleGameStart()
         {
             HideGameOver();
+            
+            if (resignButton != null)
+                resignButton.interactable = true;
 
             // Setup timer visibility
-            bool hasTimer = _gameManager.GameSettings.turnTimeLimit > 0f;
+            bool hasTimer = _gameManager != null && _gameManager.GameSettings != null 
+                && _gameManager.GameSettings.turnTimeLimit > 0f;
             if (timerPanel != null)
                 timerPanel.SetActive(hasTimer);
 
             // Initialize player score displays
             InitializeScorePanel();
 
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Game UI initialized.");
+            GameLogger.Log(GameLogger.LogLevel.INFO, "Game UI initialized and ready.");
         }
 
         private void HandleTurnChanged(int actorNumber)
         {
+            // Lazy load pieceConfig if it wasn't available at Start
+            if (_pieceConfig == null && _gameManager != null)
+                _pieceConfig = _gameManager.PieceConfig;
+
+            // Also re-cache references if they were lost
+            if (_turnManager == null && _gameManager != null)
+                _turnManager = _gameManager.TurnManager;
+            if (_boardManager == null && _gameManager != null)
+                _boardManager = _gameManager.BoardManager;
+
             // Update turn indicator
             Player currentPlayer = GetPlayerByActorNumber(actorNumber);
             string playerName = currentPlayer != null ? currentPlayer.NickName : $"Player {actorNumber}";
@@ -172,7 +193,9 @@ namespace Checkers.UI
 
             if (currentPlayerText != null)
             {
-                string turnPrefix = _turnManager.IsLocalPlayerTurn() ? "Your Turn" : $"{playerName}'s Turn";
+                string turnPrefix = (_turnManager != null && _turnManager.IsLocalPlayerTurn()) 
+                    ? "Your Turn" 
+                    : $"{playerName}'s Turn";
                 currentPlayerText.text = turnPrefix;
             }
 
@@ -222,49 +245,35 @@ namespace Checkers.UI
         #endregion
 
         #region Button Handlers
-
+        
         private void OnResignClicked()
         {
-            // Show confirmation dialog
-            if (resignConfirmPanel != null)
-                resignConfirmPanel.SetActive(true);
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowResignConfirmation();
+            }
+            else
+            {
+                // Fallback if UIManager is missing
+                GameLogger.Log(GameLogger.LogLevel.WARN, "UIManager.Instance not found! Falling back to local resign.");
+                OnResignConfirmed();
+            }
         }
 
         private void OnResignConfirmed()
         {
-            if (resignConfirmPanel != null)
-                resignConfirmPanel.SetActive(false);
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Player resigned.");
-
-            // Determine winner (in 2-player, it's the other player)
-            if (_turnManager != null && PhotonNetwork.IsConnected)
+            if (UIManager.Instance != null)
             {
-                int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
-                int[] players = _turnManager.GetPlayerActorNumbers();
-
-                int winnerActor = -1;
-                if (players != null)
-                {
-                    for (int i = 0; i < players.Length; i++)
-                    {
-                        if (players[i] != localActor)
-                        {
-                            winnerActor = players[i];
-                            break;
-                        }
-                    }
-                }
-
-                if (_gameManager.NetworkGameManager != null)
-                    _gameManager.NetworkGameManager.SendGameOver(winnerActor);
+                UIManager.Instance.ConfirmResign();
             }
         }
 
         private void OnResignCancelled()
         {
-            if (resignConfirmPanel != null)
-                resignConfirmPanel.SetActive(false);
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.CancelResign();
+            }
         }
 
         private void OnPlayAgainClicked()
@@ -360,8 +369,14 @@ namespace Checkers.UI
 
         private void ShowGameOver(int winnerActorNumber)
         {
-            if (gameOverPanel != null)
-                gameOverPanel.SetActive(true);
+            GameLogger.Log(GameLogger.LogLevel.INFO, $"GameUIController: Handling Game Over for Actor {winnerActorNumber}");
+
+            if (resignButton != null)
+                resignButton.interactable = false;
+
+            // Lazy load pieceConfig
+            if (_pieceConfig == null && _gameManager != null)
+                _pieceConfig = _gameManager.PieceConfig;
 
             Player winner = GetPlayerByActorNumber(winnerActorNumber);
             string winnerName = winner != null ? winner.NickName : $"Player {winnerActorNumber}";
@@ -375,6 +390,14 @@ namespace Checkers.UI
             if (winnerColorImage != null)
                 winnerColorImage.color = winnerColor;
 
+            // Always activate the local gameOverPanel directly
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(true);
+                gameOverPanel.transform.SetAsLastSibling();
+            }
+
+            // Also delegate to UIManager
             if (UIManager.Instance != null)
                 UIManager.Instance.ShowGameOver(winnerName, winnerColor);
         }
@@ -383,6 +406,9 @@ namespace Checkers.UI
         {
             if (gameOverPanel != null)
                 gameOverPanel.SetActive(false);
+            
+            if (resignButton != null)
+                resignButton.interactable = true;
         }
 
         #endregion

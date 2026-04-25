@@ -66,6 +66,10 @@ namespace Checkers.Gameplay
             if (obj == null) return;
             obj.SetActive(false);
             obj.transform.SetParent(poolParent);
+            // Reset transform to prevent stale scale/rotation from leaking into reuse
+            obj.transform.localPosition = Vector3.zero;
+            obj.transform.localRotation = Quaternion.identity;
+            obj.transform.localScale = Vector3.one;
             _active.Remove(obj);
             _available.Enqueue(obj);
         }

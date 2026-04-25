@@ -12,7 +12,7 @@ namespace Checkers.Gameplay
     /// Handles initialization, movement animation, king promotion, highlighting, and pooling.
     /// </summary>
     [RequireComponent(typeof(SpriteRenderer))]
-    [RequireComponent(typeof(BoxCollider2D))]
+    [RequireComponent(typeof(CircleCollider2D))]
     public class CheckersPiece : MonoBehaviour
     {
         #region Fields
@@ -36,11 +36,6 @@ namespace Checkers.Gameplay
 
         #endregion
 
-        #region Events
-
-        /// <summary>Fired when this piece is clicked. Only fires if it's the local player's turn.</summary>
-        public static event Action<CheckersPiece> OnPieceClicked;
-
         #endregion
 
         #region Unity Lifecycle
@@ -49,25 +44,22 @@ namespace Checkers.Gameplay
         {
             _spriteRenderer = GetComponent<SpriteRenderer>();
 
-            // Ensure collider exists for click detection
-            BoxCollider2D collider = GetComponent<BoxCollider2D>();
+            // Ensure collider exists for raycast detection
+            CircleCollider2D collider = GetComponent<CircleCollider2D>();
             if (collider == null)
-                collider = gameObject.AddComponent<BoxCollider2D>();
+                collider = gameObject.AddComponent<CircleCollider2D>();
 
             collider.isTrigger = true;
-            collider.size = Vector2.one * 0.8f;
+            collider.radius = 0.4f;
         }
 
-        private void OnMouseDown()
+        // InputHandler calls this when the piece is clicked/tapped
+        public void OnPieceClicked()
         {
-            // Only allow click if it's the local player's turn
-            if (GameManager.Instance == null || GameManager.Instance.TurnManager == null)
-                return;
-
-            if (!GameManager.Instance.TurnManager.IsLocalPlayerTurn())
-                return;
-
-            OnPieceClicked?.Invoke(this);
+            if (GameManager.Instance != null && GameManager.Instance.BoardManager != null)
+            {
+                GameManager.Instance.BoardManager.SelectPiece(row, col);
+            }
         }
 
         #endregion

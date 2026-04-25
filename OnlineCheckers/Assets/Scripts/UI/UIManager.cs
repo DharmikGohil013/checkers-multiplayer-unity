@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Photon.Pun;
 using Photon.Realtime;
 using Checkers.Utilities;
 
@@ -51,10 +52,17 @@ namespace Checkers.UI
         [Header("Game Over UI")]
         [SerializeField] private TextMeshProUGUI winnerText;
         [SerializeField] private Image winnerColorIndicator;
+        [SerializeField] private Button playAgainButton;
+        [SerializeField] private Button quitButton;
 
         [Header("Reconnecting UI")]
         [SerializeField] private TextMeshProUGUI reconnectingText;
         [SerializeField] private TextMeshProUGUI connectionFailedText;
+
+        [Header("Confirmation Dialog")]
+        [SerializeField] private GameObject resignConfirmPanel;
+        [SerializeField] private Button resignConfirmYes;
+        [SerializeField] private Button resignConfirmNo;
 
         [Header("Flash Effect")]
         [SerializeField] private Image invalidMoveFlashImage;
@@ -72,14 +80,21 @@ namespace Checkers.UI
 
         private void Awake()
         {
+            // Handle singleton — same robust pattern as GameManager
             if (_instance != null && _instance != this)
             {
-                Destroy(gameObject);
-                return;
+                bool existingIsAlive = !ReferenceEquals(_instance, null) && ((UnityEngine.Object)_instance) != null;
+
+                if (existingIsAlive)
+                {
+                    // True duplicate in the same scene — destroy this one only
+                    Destroy(gameObject);
+                    return;
+                }
+                // else: stale reference from previous scene — replace it
             }
 
             _instance = this;
-            DontDestroyOnLoad(gameObject);
 
             // Cache all panels for easy management
             _allPanels = new GameObject[]
@@ -89,8 +104,26 @@ namespace Checkers.UI
                 gamePanel,
                 gameOverPanel,
                 reconnectingPanel,
-                connectionFailedPanel
+                connectionFailedPanel,
+                resignConfirmPanel
             };
+
+            SetupResignButtons();
+        }
+
+        private void SetupResignButtons()
+        {
+            if (resignConfirmYes != null)
+                resignConfirmYes.onClick.AddListener(ConfirmResign);
+
+            if (resignConfirmNo != null)
+                resignConfirmNo.onClick.AddListener(CancelResign);
+
+            if (playAgainButton != null)
+                playAgainButton.onClick.AddListener(OnPlayAgainClicked);
+
+            if (quitButton != null)
+                quitButton.onClick.AddListener(OnQuitClicked);
         }
 
         private void OnDestroy()
@@ -109,31 +142,41 @@ namespace Checkers.UI
         /// </summary>
         public void ShowPanel(string panelName)
         {
+            GameLogger.Log(GameLogger.LogLevel.INFO, $"UIManager: Showing panel '{panelName}'");
+            
             HideAllPanels();
 
+            GameObject target = null;
             switch (panelName)
             {
-                case "MainMenu":
-                    SetPanelActive(mainMenuPanel, true);
-                    break;
-                case "Lobby":
-                    SetPanelActive(lobbyPanel, true);
-                    break;
-                case "Game":
-                    SetPanelActive(gamePanel, true);
-                    break;
-                case "GameOver":
-                    SetPanelActive(gameOverPanel, true);
-                    break;
-                case "Reconnecting":
-                    SetPanelActive(reconnectingPanel, true);
-                    break;
-                case "ConnectionFailed":
-                    SetPanelActive(connectionFailedPanel, true);
-                    break;
-                default:
-                    GameLogger.Log(GameLogger.LogLevel.WARN, $"Unknown panel name: {panelName}");
-                    break;
+                case "MainMenu": target = mainMenuPanel; break;
+                case "Lobby": target = lobbyPanel; break;
+                case "Game": target = gamePanel; break;
+                case "GameOver": target = gameOverPanel; break;
+                case "Reconnecting": target = reconnectingPanel; break;
+                case "ConnectionFailed": target = connectionFailedPanel; break;
+            }
+
+            if (target != null)
+            {
+                SetPanelActive(target, true);
+                
+                // Safety check: if target is a child of another managed panel, we might have just hidden its parent!
+                // We should ensure the parent is active if it's the gamePanel or lobbyPanel.
+                if (target == gameOverPanel && gamePanel != null)
+                {
+                    // Many developers put GameOver as a child of the Game panel.
+                    // If so, we need the Game panel active to see the GameOver panel.
+                    if (target.transform.IsChildOf(gamePanel.transform))
+                    {
+                        GameLogger.Log(GameLogger.LogLevel.INFO, "GameOver is child of GamePanel. Activating parent.");
+                        SetPanelActive(gamePanel, true);
+                    }
+                }
+            }
+            else
+            {
+                GameLogger.Log(GameLogger.LogLevel.WARN, $"UIManager: Panel '{panelName}' reference is null!");
             }
         }
 
@@ -229,15 +272,128 @@ namespace Checkers.UI
         /// </summary>
         public void ShowGameOver(string winnerName, Color winnerColor)
         {
-            ShowPanel("GameOver");
+            GameLogger.Log(GameLogger.LogLevel.INFO, $"UIManager: ShowGameOver for {winnerName}");
+            
+            if (gameOverPanel == null)
+            {
+                GameLogger.Log(GameLogger.LogLevel.ERROR, "UIManager: gameOverPanel is NULL! Cannot show Game Over screen.");
+                return;
+            }
+
+            // DO NOT call ShowPanel() here — it hides all panels first,
+            // which would hide the game panel (potentially the parent of gameOverPanel).
+            // Instead, just activate the gameOverPanel directly on top of the game.
+            gameOverPanel.SetActive(true);
+            
+            // Ensure it's on top of everything
+            gameOverPanel.transform.SetAsLastSibling();
 
             if (winnerText != null)
                 winnerText.text = $"{winnerName} Wins!";
+            else
+                GameLogger.Log(GameLogger.LogLevel.WARN, "UIManager: winnerText is NOT assigned!");
 
             if (winnerColorIndicator != null)
                 winnerColorIndicator.color = winnerColor;
 
             GameLogger.Log(GameLogger.LogLevel.INFO, $"Game Over UI shown. Winner: {winnerName}");
+        }
+
+        private void OnPlayAgainClicked()
+        {
+            GameLogger.Log(GameLogger.LogLevel.INFO, "UIManager: Play Again clicked. Returning to lobby.");
+
+            if (PhotonNetwork.InRoom)
+                PhotonNetwork.LeaveRoom();
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene(Constants.SCENE_LOBBY);
+        }
+
+        private void OnQuitClicked()
+        {
+            GameLogger.Log(GameLogger.LogLevel.INFO, "UIManager: Quit clicked.");
+
+            if (PhotonNetwork.IsConnected)
+                PhotonNetwork.Disconnect();
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        #endregion
+
+        #region Resign Logic
+
+        /// <summary>
+        /// Shows the resign confirmation dialog.
+        /// </summary>
+        public void ShowResignConfirmation()
+        {
+            if (resignConfirmPanel != null)
+            {
+                resignConfirmPanel.SetActive(true);
+                GameLogger.Log(GameLogger.LogLevel.INFO, "Resign confirmation shown via UIManager.");
+            }
+        }
+
+        /// <summary>
+        /// Executes the resignation logic. Called when the player confirms resignation.
+        /// </summary>
+        public void ConfirmResign()
+        {
+            GameLogger.Log(GameLogger.LogLevel.INFO, "Resign confirmed via UIManager.");
+
+            if (resignConfirmPanel != null)
+                resignConfirmPanel.SetActive(false);
+
+            // Access Managers to execute game over
+            Core.GameManager gm = Core.GameManager.Instance;
+            if (gm == null) return;
+
+            Core.TurnManager tm = gm.TurnManager;
+            if (tm != null && PhotonNetwork.IsConnectedAndReady)
+            {
+                int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+                int[] players = tm.GetPlayerActorNumbers();
+
+                int winnerActor = -1;
+                if (players != null && players.Length > 0)
+                {
+                    foreach (int actor in players)
+                    {
+                        if (actor != localActor)
+                        {
+                            winnerActor = actor;
+                            break;
+                        }
+                    }
+                    if (winnerActor == -1) winnerActor = localActor;
+                }
+
+                if (gm.NetworkGameManager != null)
+                {
+                    gm.NetworkGameManager.SendGameOver(winnerActor);
+                }
+            }
+            else
+            {
+                // Fallback for local/offline
+                gm.EndGame(-1);
+            }
+        }
+
+        /// <summary>
+        /// Cancels the resignation attempt.
+        /// </summary>
+        public void CancelResign()
+        {
+            if (resignConfirmPanel != null)
+                resignConfirmPanel.SetActive(false);
+            
+            GameLogger.Log(GameLogger.LogLevel.INFO, "Resign cancelled via UIManager.");
         }
 
         #endregion
