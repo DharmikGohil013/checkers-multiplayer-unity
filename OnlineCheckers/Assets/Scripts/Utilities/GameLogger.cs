@@ -1,16 +1,8 @@
 using UnityEngine;
-
 namespace Checkers.Utilities
 {
-    /// <summary>
-    /// Custom logger that wraps Debug.Log with log levels and color-coded output.
-    /// Compiled out in release builds to eliminate logging overhead.
-    /// </summary>
     public static class GameLogger
     {
-        /// <summary>
-        /// Log level enumeration for filtering and color-coding.
-        /// </summary>
         public enum LogLevel
         {
             INFO,
@@ -18,34 +10,15 @@ namespace Checkers.Utilities
             ERROR,
             DESYNC
         }
-
-        /// <summary>
-        /// Master toggle for enabling/disabling all logging at runtime.
-        /// </summary>
         public static bool EnableLogging = true;
-
-        /// <summary>
-        /// Logs a message with the specified log level.
-        /// Color-coded in Editor and Development builds:
-        ///   INFO  = White
-        ///   WARN  = Yellow/Orange
-        ///   ERROR = Red
-        ///   DESYNC = Magenta
-        /// Compiled out entirely in release builds.
-        /// </summary>
-        /// <param name="level">Severity level.</param>
-        /// <param name="message">Log message.</param>
-        /// <param name="context">Optional Unity object context for click-to-focus in console.</param>
         [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void Log(LogLevel level, string message, Object context = null)
         {
             if (!EnableLogging)
                 return;
-
             string prefix;
             string colorTag;
-
             switch (level)
             {
                 case LogLevel.INFO:
@@ -69,9 +42,7 @@ namespace Checkers.Utilities
                     colorTag = "#CCCCCC";
                     break;
             }
-
             string formattedMessage = $"<color={colorTag}>{prefix} [Checkers] {message}</color>";
-
             switch (level)
             {
                 case LogLevel.INFO:
@@ -86,19 +57,12 @@ namespace Checkers.Utilities
                     break;
             }
         }
-
-        /// <summary>
-        /// Logs a desync error comparing expected and actual state values.
-        /// </summary>
-        /// <param name="expected">Description of the expected state.</param>
-        /// <param name="actual">Description of the actual state.</param>
         [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogDesync(string expected, string actual)
         {
             if (!EnableLogging)
                 return;
-
             string message = $"DESYNC DETECTED!\n  Expected: {expected}\n  Actual:   {actual}";
             Log(LogLevel.DESYNC, message);
         }
