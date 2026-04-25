@@ -34178,7 +34178,7 @@ IL_004d:
 		return;
 	}
 }
-// Method Definition Index: 11571
+// Method Definition Index: 11572
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FormattingHelpers_CountDigits_mE01337E47EFAB38CB85A419CECA05B3535330A30_inline (uint32_t ___0_value, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -34258,7 +34258,7 @@ IL_0047:
 		return L_11;
 	}
 }
-// Method Definition Index: 11572
+// Method Definition Index: 11573
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FormattingHelpers_CountHexDigits_m2A0168ACE924C7DFBCFFD60AF8FEA1C6CC0420B7_inline (uint64_t ___0_value, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -34326,7 +34326,7 @@ IL_0040:
 		return L_11;
 	}
 }
-// Method Definition Index: 11570
+// Method Definition Index: 11571
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FormattingHelpers_CountDigits_mC01C8C5301C555C927118C5FAA3DCFC7D542487F_inline (uint64_t ___0_value, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
