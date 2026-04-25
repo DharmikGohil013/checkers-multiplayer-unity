@@ -39,7 +39,15 @@ namespace Checkers.Gameplay
 
             BoxCollider2D collider = GetComponent<BoxCollider2D>();
             if (collider == null)
+            {
                 collider = gameObject.AddComponent<BoxCollider2D>();
+                Debug.LogError("[COLLIDER] MISSING collider on: " + gameObject.name + " — Auto-added one.");
+            }
+            else
+            {
+                Debug.Log("[COLLIDER] Found collider on: " + gameObject.name + 
+                          " | Size: " + collider.bounds.size);
+            }
 
             collider.isTrigger = true;
             collider.size = Vector2.one;

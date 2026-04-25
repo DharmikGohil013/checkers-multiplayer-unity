@@ -137,7 +137,20 @@ namespace Checkers.Gameplay
             if (!inputDown)
                 return;
 
-            Debug.Log($"[InputHandler] {inputType} Input detected at screen pos: {screenPos}");
+            Debug.Log("=== INPUT PIPELINE START ===");
+            Debug.Log("Touch → Raycast → Hit → TurnCheck → Select");
+
+            Debug.Log($"[INPUT] Touch detected at screen: {screenPos}");
+
+            if (UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                // Basic check for UI blocking (works for mouse/touches depending on Unity version)
+                if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                {
+                    Debug.LogWarning("[UI BLOCK] Touch is over UI — blocking input");
+                    // return; // Uncomment to actually block it, keeping just log for now
+                }
+            }
 
             if (!CanProcessInput())
             {
@@ -158,11 +171,22 @@ namespace Checkers.Gameplay
 
             // Convert screen position to world position
             Vector2 worldPos = _mainCamera.ScreenToWorldPoint(screenPos);
-            Debug.Log($"[InputHandler] Converted screen pos {screenPos} to world pos: {worldPos}");
+            Debug.Log($"[INPUT] Converted world position: {worldPos}");
 
             // Raycast to find what was clicked — check pieces FIRST (higher sorting order)
             RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero);
-            Debug.Log($"[InputHandler] RaycastAll found {hits.Length} hits.");
+            Debug.Log($"[RAYCAST] Hit count: {hits.Length}");
+
+            if (hits.Length == 0)
+            {
+                Debug.LogWarning("[RAYCAST] NO OBJECT HIT — possible collider issue");
+            }
+
+            foreach (var hit in hits)
+            {
+                Debug.Log("[RAYCAST] Hit object: " + hit.collider.name + 
+                          " | Layer: " + LayerMask.LayerToName(hit.collider.gameObject.layer));
+            }
 
             CheckersPiece hitPiece = null;
             BoardCell hitCell = null;
@@ -202,6 +226,8 @@ namespace Checkers.Gameplay
             {
                 Debug.Log($"[InputHandler] Raycast hit nothing playable. If clicking board, check colliders and Z-position.");
             }
+
+            Debug.Log("=== INPUT PIPELINE END ===");
         }
 
         #endregion
@@ -312,6 +338,14 @@ namespace Checkers.Gameplay
 
         private void SelectPiece(CheckersPiece piece)
         {
+            if (piece == null)
+            {
+                Debug.LogError("[SELECT] Piece is NULL");
+                return;
+            }
+
+            Debug.Log("[SELECT] Trying to select: " + piece.name);
+
             _selectedPiece = piece;
             _selectedPiece.SetHighlight(true);
 
@@ -485,7 +519,15 @@ namespace Checkers.Gameplay
             }
 
             bool isLocalTurn = _turnManager != null && _turnManager.IsLocalPlayerTurn();
-            Debug.Log($"[InputHandler] CanProcessInput: {isLocalTurn} (Current Turn Player: {(_turnManager != null ? _turnManager.GetCurrentPlayer() : -1)}, My Actor: {(PhotonNetwork.InRoom ? PhotonNetwork.LocalPlayer.ActorNumber : -1)})");
+            int currentTurn = _turnManager != null ? _turnManager.GetCurrentPlayer() : -1;
+            int myActor = PhotonNetwork.InRoom ? PhotonNetwork.LocalPlayer.ActorNumber : -1;
+
+            Debug.Log($"[TURN CHECK] LocalPlayer: {myActor} | CurrentTurn: {currentTurn}");
+
+            if (!isLocalTurn)
+            {
+                Debug.LogWarning("[TURN BLOCK] Input blocked — NOT your turn");
+            }
             
             return isLocalTurn;
         }

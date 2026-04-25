@@ -689,6 +689,7 @@ MonoBehaviour:
   piecePrefab: {fileID: 1246416597019455176, guid: f27b55e72548ccd40a67b07c810a5b0b, type: 3}
   cellPrefab: {fileID: 8005443922619684878, guid: 1439a0973e535a8419b5f5f9bc693823, type: 3}
   boardParent: {fileID: 559494289}
+  piecesParent: {fileID: 0}
 --- !u!114 &377685182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -766,7 +767,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkers.Gameplay.CellPool
   prefab: {fileID: 8005443922619684878, guid: 1439a0973e535a8419b5f5f9bc693823, type: 3}
   initialSize: 64
-  poolParent: {fileID: 1760406306}
+  poolParent: {fileID: 559494289}
 --- !u!114 &377685189
 MonoBehaviour:
   m_ObjectHideFlags: 0

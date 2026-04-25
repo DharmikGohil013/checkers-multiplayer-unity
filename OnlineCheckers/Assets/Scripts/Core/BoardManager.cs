@@ -97,8 +97,19 @@ namespace Checkers.Core
 
         private void Awake()
         {
-            if (boardParent == null) boardParent = transform;
-            if (piecesParent == null) piecesParent = transform;
+            if (boardParent == null)
+            {
+                GameObject bp = new GameObject("BoardParent");
+                bp.transform.SetParent(transform);
+                boardParent = bp.transform;
+            }
+
+            if (piecesParent == null)
+            {
+                GameObject pp = new GameObject("PiecesParent");
+                pp.transform.SetParent(transform);
+                piecesParent = pp.transform;
+            }
 
             // Get or create pool components — they must exist before InitializeBoard is called
             _piecePool = GetComponent<PiecePool>();

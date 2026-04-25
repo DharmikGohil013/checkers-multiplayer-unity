@@ -37,8 +37,21 @@ namespace Checkers.Gameplay
         public void Setup(GameObject p, Transform parent, int size)
         {
             prefab      = p;
+            Transform oldParent = poolParent;
             poolParent  = parent != null ? parent : transform;
             initialSize = size;
+
+            Debug.Log($"[{GetType().Name}] Pool Parent set to: {poolParent.name}");
+
+            // If Awake() already PreWarmed into the default transform, move them to the correct parent now
+            if (oldParent != poolParent && _available.Count > 0)
+            {
+                foreach (var obj in _available)
+                {
+                    if (obj != null)
+                        obj.transform.SetParent(poolParent);
+                }
+            }
 
             if (_available.Count == 0 && _active.Count == 0)
                 PreWarm();

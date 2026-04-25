@@ -203,7 +203,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4964070909680337913}
   - component: {fileID: 3029714947138190031}
-  m_Layer: 3
+  m_Layer: 2
   m_Name: KingIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}

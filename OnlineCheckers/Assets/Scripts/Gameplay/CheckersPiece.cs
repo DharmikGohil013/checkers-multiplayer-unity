@@ -45,7 +45,15 @@ namespace Checkers.Gameplay
             // Ensure collider exists for raycast detection
             CircleCollider2D collider = GetComponent<CircleCollider2D>();
             if (collider == null)
+            {
                 collider = gameObject.AddComponent<CircleCollider2D>();
+                Debug.LogError("[COLLIDER] MISSING collider on: " + gameObject.name + " — Auto-added one.");
+            }
+            else
+            {
+                Debug.Log("[COLLIDER] Found collider on: " + gameObject.name + 
+                          " | Size: " + collider.bounds.size);
+            }
 
             collider.isTrigger = true;
             collider.radius = 0.4f;
@@ -110,6 +118,12 @@ namespace Checkers.Gameplay
             _spriteRenderer.sortingOrder = 1;
 
             _isHighlighted = false;
+
+            Debug.Log("[RENDER] " + gameObject.name +
+                      " SortingLayer: " + _spriteRenderer.sortingLayerName +
+                      " Order: " + _spriteRenderer.sortingOrder);
+            
+            Debug.Log("[POSITION] " + gameObject.name + " Z: " + transform.position.z);
 
             GameLogger.Log(GameLogger.LogLevel.INFO,
                 $"Piece initialized: Player {owner} at ({initRow},{initCol})");
