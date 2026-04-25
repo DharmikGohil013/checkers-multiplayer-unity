@@ -20,9 +20,14 @@ namespace Checkers.Core
         {
             get
             {
+                // Unity null-check: if the object was destroyed, the C# ref may still be non-null
                 if (_instance == null)
                 {
-                    GameLogger.Log(GameLogger.LogLevel.ERROR, "GameManager instance is null. Ensure it exists in the scene.");
+                    _instance = FindAnyObjectByType<GameManager>();
+                    if (_instance == null)
+                    {
+                        GameLogger.Log(GameLogger.LogLevel.ERROR, "GameManager instance is null. Ensure it exists in the scene.");
+                    }
                 }
                 return _instance;
             }
@@ -75,11 +80,29 @@ namespace Checkers.Core
 
         private void Awake()
         {
+            // Check if the existing instance is actually alive.
+            // When Photon reloads a scene via PhotonNetwork.LoadLevel,
+            // the old GameManager is destroyed but the static _instance
+            // reference may still point to it (Unity null-check trick).
+            // If _instance is "Unity-null" (destroyed), we must claim ownership.
             if (_instance != null && _instance != this)
             {
-                GameLogger.Log(GameLogger.LogLevel.WARN, "Duplicate GameManager detected. Destroying this instance.");
-                Destroy(gameObject);
-                return;
+                // Unity overloads == so a destroyed object == null, but the
+                // C# reference is still non-null. Check the Unity-null side:
+                if ((object)_instance != null && _instance == null)
+                {
+                    // Stale reference — previous instance was destroyed (scene unload).
+                    // Safe to replace.
+                    GameLogger.Log(GameLogger.LogLevel.INFO,
+                        "Previous GameManager was destroyed (scene reload). Replacing singleton.");
+                    _instance = this;
+                }
+                else
+                {
+                    GameLogger.Log(GameLogger.LogLevel.WARN, "Duplicate GameManager detected. Destroying this instance.");
+                    Destroy(gameObject);
+                    return;
+                }
             }
 
             _instance = this;

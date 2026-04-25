@@ -1,0 +1,2 @@
+D:\Capermint Technologies Pvt. Ltd\checkers-multiplayer-unity\OnlineCheckers\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\CMakeLists.txt
+D:\Capermint Technologies Pvt. Ltd\checkers-multiplayer-unity\OnlineCheckers\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\CMakeLists.txt

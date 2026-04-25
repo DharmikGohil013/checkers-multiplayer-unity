@@ -1,3 +1,4 @@
+// Assets/Scripts/UI/LobbyUIController.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,10 +9,6 @@ using Checkers.Utilities;
 
 namespace Checkers.UI
 {
-    /// <summary>
-    /// Controls the Lobby UI: room name input, player count selection, board size selection,
-    /// player list display, and room creation/joining buttons.
-    /// </summary>
     public class LobbyUIController : MonoBehaviour
     {
         #region UI References
@@ -52,27 +49,20 @@ namespace Checkers.UI
 
         private void Start()
         {
-            // Cache network manager
             if (networkLobbyManager == null)
                 networkLobbyManager = FindAnyObjectByType<NetworkLobbyManager>();
 
             SetupDropdowns();
             SetupButtons();
+
+            // Always hide start button on start
             SetStartButtonVisible(false);
 
-            // Show join panel, hide room info
-            if (roomInfoPanel != null)
-                roomInfoPanel.SetActive(false);
-            if (joinPanel != null)
-                joinPanel.SetActive(true);
-
-            // Set default player name
+            // Default player name
+            string savedName = PlayerPrefs.GetString("PlayerName", "Player" + Random.Range(100, 999));
+            PhotonNetwork.NickName = savedName;
             if (playerNameInput != null)
-            {
-                string savedName = PlayerPrefs.GetString("PlayerName", "Player" + Random.Range(100, 999));
                 playerNameInput.text = savedName;
-                PhotonNetwork.NickName = savedName;
-            }
         }
 
         #endregion
@@ -81,7 +71,6 @@ namespace Checkers.UI
 
         private void SetupDropdowns()
         {
-            // Player Count Dropdown: 2 or 4 players
             if (playerCountDropdown != null)
             {
                 playerCountDropdown.ClearOptions();
@@ -90,32 +79,22 @@ namespace Checkers.UI
                 playerCountDropdown.onValueChanged.AddListener(OnPlayerCountChanged);
             }
 
-            // Board Size Dropdown: 4x4, 6x6, 8x8
             if (boardSizeDropdown != null)
             {
                 boardSizeDropdown.ClearOptions();
                 boardSizeDropdown.AddOptions(new System.Collections.Generic.List<string> { "4x4", "6x6", "8x8" });
-                boardSizeDropdown.value = 2; // Default to 8x8
+                boardSizeDropdown.value = 2;
                 boardSizeDropdown.onValueChanged.AddListener(OnBoardSizeChanged);
             }
         }
 
         private void SetupButtons()
         {
-            if (createRoomButton != null)
-                createRoomButton.onClick.AddListener(OnCreateRoomClicked);
-
-            if (joinRoomButton != null)
-                joinRoomButton.onClick.AddListener(OnJoinRoomClicked);
-
-            if (joinRandomButton != null)
-                joinRandomButton.onClick.AddListener(OnJoinRandomClicked);
-
-            if (startGameButton != null)
-                startGameButton.onClick.AddListener(OnStartGameClicked);
-
-            if (disconnectButton != null)
-                disconnectButton.onClick.AddListener(OnDisconnectClicked);
+            createRoomButton?.onClick.AddListener(OnCreateRoomClicked);
+            joinRoomButton?.onClick.AddListener(OnJoinRoomClicked);
+            joinRandomButton?.onClick.AddListener(OnJoinRandomClicked);
+            startGameButton?.onClick.AddListener(OnStartGameClicked);
+            disconnectButton?.onClick.AddListener(OnDisconnectClicked);
         }
 
         #endregion
@@ -125,14 +104,14 @@ namespace Checkers.UI
         private void OnCreateRoomClicked()
         {
             UpdatePlayerName();
-            string roomName = roomNameInput != null ? roomNameInput.text : "";
+            string roomName = roomNameInput != null ? roomNameInput.text.Trim() : "";
             networkLobbyManager?.CreateRoom(roomName);
         }
 
         private void OnJoinRoomClicked()
         {
             UpdatePlayerName();
-            string roomName = roomNameInput != null ? roomNameInput.text : "";
+            string roomName = roomNameInput != null ? roomNameInput.text.Trim() : "";
             networkLobbyManager?.JoinRoom(roomName);
         }
 
@@ -150,13 +129,6 @@ namespace Checkers.UI
         private void OnDisconnectClicked()
         {
             networkLobbyManager?.Disconnect();
-
-            // Reset UI
-            if (roomInfoPanel != null)
-                roomInfoPanel.SetActive(false);
-            if (joinPanel != null)
-                joinPanel.SetActive(true);
-
             SetStartButtonVisible(false);
             SetStatusText("Disconnected.");
         }
@@ -165,8 +137,6 @@ namespace Checkers.UI
         {
             int count = index == 0 ? 2 : 4;
             networkLobbyManager?.SetPlayerCount(count);
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, $"Player count set to: {count}");
         }
 
         private void OnBoardSizeChanged(int index)
@@ -174,88 +144,83 @@ namespace Checkers.UI
             int[] sizes = { 4, 6, 8 };
             int size = sizes[Mathf.Clamp(index, 0, sizes.Length - 1)];
             networkLobbyManager?.SetBoardSize(size);
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, $"Board size set to: {size}x{size}");
         }
 
         #endregion
 
-        #region Public Methods
+        #region Public API (called by NetworkLobbyManager callbacks)
 
-        /// <summary>
-        /// Called when the local player joins a room. Updates UI to show room info.
-        /// </summary>
+        /// <summary>Called when local player successfully joins a room.</summary>
         public void OnJoinedRoom()
         {
+            // Show room info panel if you have one wired; safe to skip if None
             if (joinPanel != null)
                 joinPanel.SetActive(false);
-
             if (roomInfoPanel != null)
                 roomInfoPanel.SetActive(true);
 
-            if (roomInfoText != null)
-            {
-                roomInfoText.text = $"Room: {PhotonNetwork.CurrentRoom.Name}\n" +
-                                   $"Players: {PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers}";
-            }
+            UpdateRoomInfoText();
+
+            // Immediately evaluate start button
+            RefreshStartButton();
         }
 
         /// <summary>
-        /// Updates the player list display with current room players.
+        /// Rebuilds the player list UI. Call this every time any player enters or leaves.
         /// </summary>
         public void UpdatePlayerList(Player[] players)
         {
-            if (playerListParent == null)
-                return;
+            if (playerListParent == null) return;
 
-            // Clear existing items
+            // --- Clear all existing children ---
             for (int i = playerListParent.childCount - 1; i >= 0; i--)
             {
                 Destroy(playerListParent.GetChild(i).gameObject);
             }
 
-            // Create new items
-            for (int i = 0; i < players.Length; i++)
+            // --- Recreate one entry per player ---
+            foreach (Player player in players)
             {
-                Player player = players[i];
+                string prefix = player.IsMasterClient ? "[Host] " : "";
+                string localTag = player.IsLocal ? " (You)" : "";
+                string displayName = string.IsNullOrEmpty(player.NickName)
+                    ? $"Player {player.ActorNumber}"
+                    : player.NickName;
+                string fullText = $"{prefix}{displayName}{localTag}";
 
                 if (playerListItemPrefab != null)
                 {
                     GameObject item = Instantiate(playerListItemPrefab, playerListParent);
-                    TextMeshProUGUI itemText = item.GetComponentInChildren<TextMeshProUGUI>();
-                    if (itemText != null)
-                    {
-                        string prefix = player.IsMasterClient ? "★ " : "  ";
-                        string localTag = player.IsLocal ? " (You)" : "";
-                        itemText.text = $"{prefix}{player.NickName}{localTag}";
-                    }
+                    // Support both direct TMP component and child TMP component
+                    TextMeshProUGUI tmp = item.GetComponent<TextMeshProUGUI>();
+                    if (tmp == null)
+                        tmp = item.GetComponentInChildren<TextMeshProUGUI>();
+                    if (tmp != null)
+                        tmp.text = fullText;
                 }
                 else
                 {
-                    // Fallback: create a simple text object
-                    GameObject item = new GameObject($"PlayerItem_{i}");
-                    item.transform.SetParent(playerListParent);
+                    // Fallback: programmatic text object
+                    GameObject item = new GameObject($"Player_{player.ActorNumber}");
+                    RectTransform rt = item.AddComponent<RectTransform>();
+                    rt.SetParent(playerListParent, false);
+                    rt.sizeDelta = new Vector2(280f, 40f);
 
-                    TextMeshProUGUI text = item.AddComponent<TextMeshProUGUI>();
-                    string prefix = player.IsMasterClient ? "★ " : "  ";
-                    string localTag = player.IsLocal ? " (You)" : "";
-                    text.text = $"{prefix}{player.NickName}{localTag}";
-                    text.fontSize = 18;
-                    text.color = Color.white;
+                    TextMeshProUGUI tmp = item.AddComponent<TextMeshProUGUI>();
+                    tmp.text = fullText;
+                    tmp.fontSize = 20;
+                    tmp.color = Color.white;
+                    tmp.alignment = TextAlignmentOptions.MidlineLeft;
                 }
             }
 
-            // Update room info
-            if (roomInfoText != null && PhotonNetwork.InRoom)
-            {
-                roomInfoText.text = $"Room: {PhotonNetwork.CurrentRoom.Name}\n" +
-                                   $"Players: {PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers}";
-            }
+            // Force layout rebuild so Unity redraws the list immediately
+            LayoutRebuilder.ForceRebuildLayoutImmediate(playerListParent as RectTransform);
+
+            UpdateRoomInfoText();
+            RefreshStartButton();
         }
 
-        /// <summary>
-        /// Sets the status text message.
-        /// </summary>
         public void SetStatusText(string message)
         {
             if (statusText != null)
@@ -263,7 +228,8 @@ namespace Checkers.UI
         }
 
         /// <summary>
-        /// Shows or hides the Start Game button (visible only to MasterClient).
+        /// Shows or hides the Start Game button.
+        /// Only call this from RefreshStartButton — do not call manually.
         /// </summary>
         public void SetStartButtonVisible(bool visible)
         {
@@ -273,14 +239,48 @@ namespace Checkers.UI
 
         #endregion
 
+        #region Start Button Logic
+
+        /// <summary>
+        /// The ONLY place that decides whether Start button is visible.
+        /// Rules: must be in a room, must be MasterClient, must have >= 2 players.
+        /// </summary>
+        private void RefreshStartButton()
+        {
+            if (!PhotonNetwork.InRoom)
+            {
+                SetStartButtonVisible(false);
+                return;
+            }
+
+            bool isMaster = PhotonNetwork.IsMasterClient;
+            int count = PhotonNetwork.CurrentRoom.PlayerCount;
+
+            Debug.Log($"[LobbyUI] RefreshStartButton — IsMaster:{isMaster} PlayerCount:{count}");
+
+            SetStartButtonVisible(isMaster && count >= 2);
+        }
+
+        #endregion
+
         #region Helpers
+
+        private void UpdateRoomInfoText()
+        {
+            if (roomInfoText != null && PhotonNetwork.InRoom)
+            {
+                roomInfoText.text =
+                    $"Room: {PhotonNetwork.CurrentRoom.Name}  " +
+                    $"Players: {PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers}";
+            }
+        }
 
         private void UpdatePlayerName()
         {
             if (playerNameInput != null && !string.IsNullOrEmpty(playerNameInput.text))
             {
-                PhotonNetwork.NickName = playerNameInput.text;
-                PlayerPrefs.SetString("PlayerName", playerNameInput.text);
+                PhotonNetwork.NickName = playerNameInput.text.Trim();
+                PlayerPrefs.SetString("PlayerName", PhotonNetwork.NickName);
                 PlayerPrefs.Save();
             }
         }
@@ -291,26 +291,13 @@ namespace Checkers.UI
 
         private void OnDestroy()
         {
-            if (playerCountDropdown != null)
-                playerCountDropdown.onValueChanged.RemoveListener(OnPlayerCountChanged);
-
-            if (boardSizeDropdown != null)
-                boardSizeDropdown.onValueChanged.RemoveListener(OnBoardSizeChanged);
-
-            if (createRoomButton != null)
-                createRoomButton.onClick.RemoveListener(OnCreateRoomClicked);
-
-            if (joinRoomButton != null)
-                joinRoomButton.onClick.RemoveListener(OnJoinRoomClicked);
-
-            if (joinRandomButton != null)
-                joinRandomButton.onClick.RemoveListener(OnJoinRandomClicked);
-
-            if (startGameButton != null)
-                startGameButton.onClick.RemoveListener(OnStartGameClicked);
-
-            if (disconnectButton != null)
-                disconnectButton.onClick.RemoveListener(OnDisconnectClicked);
+            playerCountDropdown?.onValueChanged.RemoveListener(OnPlayerCountChanged);
+            boardSizeDropdown?.onValueChanged.RemoveListener(OnBoardSizeChanged);
+            createRoomButton?.onClick.RemoveListener(OnCreateRoomClicked);
+            joinRoomButton?.onClick.RemoveListener(OnJoinRoomClicked);
+            joinRandomButton?.onClick.RemoveListener(OnJoinRandomClicked);
+            startGameButton?.onClick.RemoveListener(OnStartGameClicked);
+            disconnectButton?.onClick.RemoveListener(OnDisconnectClicked);
         }
 
         #endregion

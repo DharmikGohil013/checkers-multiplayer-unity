@@ -1,3 +1,4 @@
+// Assets/Scripts/Network/NetworkLobbyManager.cs
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
@@ -8,14 +9,8 @@ using Checkers.Utilities;
 
 namespace Checkers.Network
 {
-    /// <summary>
-    /// Handles Photon lobby operations: connecting, creating/joining rooms, and scene transitions.
-    /// Attached to a persistent lobby GameObject in the LobbyScene.
-    /// </summary>
     public class NetworkLobbyManager : MonoBehaviourPunCallbacks
     {
-        #region Fields
-
         [Header("Configuration")]
         [SerializeField] private BoardConfig boardConfig;
         [SerializeField] private GameSettings gameSettings;
@@ -23,23 +18,13 @@ namespace Checkers.Network
         [Header("UI Reference")]
         [SerializeField] private LobbyUIController lobbyUI;
 
-        private bool _isConnecting;
-        private string _pendingRoomName;
         private bool _joinRandomOnConnect;
 
-        #endregion
-
+        // -------------------------------------------------------
         #region Unity Lifecycle
 
         private void Awake()
         {
-            // Load configs from Resources if not assigned
-            if (boardConfig == null)
-                boardConfig = Resources.Load<BoardConfig>("BoardConfig");
-            if (gameSettings == null)
-                gameSettings = Resources.Load<GameSettings>("GameSettings");
-
-            // Ensure we don't destroy this across scenes (lobby manager persists until game scene loads)
             PhotonNetwork.AutomaticallySyncScene = true;
         }
 
@@ -49,52 +34,35 @@ namespace Checkers.Network
                 lobbyUI = FindAnyObjectByType<LobbyUIController>();
 
             if (!PhotonNetwork.IsConnected)
-            {
                 ConnectToPhoton();
-            }
             else
-            {
-                UpdateUIStatus("Connected to Photon.");
-            }
+                lobbyUI?.SetStatusText("Connected to Photon.");
         }
 
         #endregion
 
+        // -------------------------------------------------------
         #region Connection
 
-        /// <summary>
-        /// Connects to Photon master server using GameSettings configuration.
-        /// </summary>
         public void ConnectToPhoton()
         {
-            if (PhotonNetwork.IsConnected)
-            {
-                GameLogger.Log(GameLogger.LogLevel.INFO, "Already connected to Photon.");
-                return;
-            }
+            if (PhotonNetwork.IsConnected) return;
 
-            _isConnecting = true;
-            UpdateUIStatus("Connecting to Photon...");
-
-            PhotonNetwork.GameVersion = gameSettings != null ? gameSettings.photonAppVersion : Constants.PHOTON_APP_VERSION;
+            lobbyUI?.SetStatusText("Connecting to Photon...");
+            PhotonNetwork.GameVersion = gameSettings != null ? gameSettings.photonAppVersion : "1.0";
             PhotonNetwork.ConnectUsingSettings();
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Connecting to Photon...");
         }
 
         #endregion
 
+        // -------------------------------------------------------
         #region Room Operations
 
-        /// <summary>
-        /// Creates a new room with the specified name and current board configuration.
-        /// </summary>
         public void CreateRoom(string roomName)
         {
             if (!PhotonNetwork.IsConnectedAndReady)
             {
-                GameLogger.Log(GameLogger.LogLevel.WARN, "Cannot create room: not connected.");
-                UpdateUIStatus("Not connected. Please wait...");
+                lobbyUI?.SetStatusText("Not connected. Please wait...");
                 return;
             }
 
@@ -102,20 +70,20 @@ namespace Checkers.Network
                 roomName = "Room_" + Random.Range(1000, 9999);
 
             int maxPlayers = boardConfig != null ? boardConfig.playerCount : 2;
-            int boardSize = boardConfig != null ? boardConfig.boardSize : 8;
+            int boardSize  = boardConfig != null ? boardConfig.boardSize  : 8;
 
-            RoomOptions roomOptions = new RoomOptions
+            RoomOptions options = new RoomOptions
             {
                 MaxPlayers = (byte)maxPlayers,
-                IsVisible = true,
-                IsOpen = true,
-                PlayerTtl = 30000, // 30 seconds reconnect window
+                IsVisible  = true,
+                IsOpen     = true,
+                PlayerTtl  = 60000,   // 60s reconnect window
                 EmptyRoomTtl = 0,
                 CustomRoomProperties = new Hashtable
                 {
-                    { Constants.ROOM_PROP_BOARD_SIZE, boardSize },
-                    { Constants.ROOM_PROP_PLAYER_COUNT, maxPlayers },
-                    { Constants.ROOM_PROP_GAME_STATE, "" }
+                    { Constants.ROOM_PROP_BOARD_SIZE,   boardSize   },
+                    { Constants.ROOM_PROP_PLAYER_COUNT, maxPlayers  },
+                    { Constants.ROOM_PROP_GAME_STATE,   ""          }
                 },
                 CustomRoomPropertiesForLobby = new string[]
                 {
@@ -124,230 +92,156 @@ namespace Checkers.Network
                 }
             };
 
-            PhotonNetwork.CreateRoom(roomName, roomOptions);
-            UpdateUIStatus($"Creating room '{roomName}'...");
-
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Creating room: {roomName}, MaxPlayers: {maxPlayers}, BoardSize: {boardSize}");
+            PhotonNetwork.CreateRoom(roomName, options);
+            lobbyUI?.SetStatusText($"Creating room '{roomName}'...");
+            Debug.Log($"[Lobby] Creating room: {roomName}");
         }
 
-        /// <summary>
-        /// Joins an existing room by name.
-        /// </summary>
         public void JoinRoom(string roomName)
         {
             if (!PhotonNetwork.IsConnectedAndReady)
             {
-                UpdateUIStatus("Not connected. Please wait...");
+                lobbyUI?.SetStatusText("Not connected. Please wait...");
                 return;
             }
 
             if (string.IsNullOrEmpty(roomName))
             {
-                UpdateUIStatus("Please enter a room name.");
+                lobbyUI?.SetStatusText("Please enter a room name.");
                 return;
             }
 
             PhotonNetwork.JoinRoom(roomName);
-            UpdateUIStatus($"Joining room '{roomName}'...");
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, $"Joining room: {roomName}");
+            lobbyUI?.SetStatusText($"Joining room '{roomName}'...");
+            Debug.Log($"[Lobby] Joining room: {roomName}");
         }
 
-        /// <summary>
-        /// Attempts to join a random available room.
-        /// </summary>
         public void JoinRandomRoom()
         {
             if (!PhotonNetwork.IsConnectedAndReady)
             {
                 _joinRandomOnConnect = true;
-                UpdateUIStatus("Connecting first...");
                 ConnectToPhoton();
                 return;
             }
 
-            int boardSize = boardConfig != null ? boardConfig.boardSize : 8;
-            int playerCount = boardConfig != null ? boardConfig.playerCount : 2;
-
-            Hashtable expectedProps = new Hashtable
-            {
-                { Constants.ROOM_PROP_BOARD_SIZE, boardSize },
-                { Constants.ROOM_PROP_PLAYER_COUNT, playerCount }
-            };
-
-            PhotonNetwork.JoinRandomRoom(expectedProps, 0);
-            UpdateUIStatus("Searching for a room...");
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Joining random room...");
+            PhotonNetwork.JoinRandomRoom();
+            lobbyUI?.SetStatusText("Searching for a room...");
         }
 
-        /// <summary>
-        /// Starts the game (MasterClient only). Loads the game scene for all players.
-        /// </summary>
         public void StartGame()
         {
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                GameLogger.Log(GameLogger.LogLevel.WARN, "Only MasterClient can start the game.");
-                return;
-            }
-
+            if (!PhotonNetwork.IsMasterClient) return;
             if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
             {
-                UpdateUIStatus("Need at least 2 players to start.");
+                lobbyUI?.SetStatusText("Need at least 2 players.");
                 return;
             }
 
-            // Close the room so no new players can join
             PhotonNetwork.CurrentRoom.IsOpen = false;
-
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Starting game with {PhotonNetwork.CurrentRoom.PlayerCount} players.");
-
+            Debug.Log("[Lobby] Starting game...");
             PhotonNetwork.LoadLevel(Constants.SCENE_GAME);
         }
 
-        /// <summary>
-        /// Updates the board configuration based on UI selections.
-        /// </summary>
         public void SetBoardSize(int size)
         {
             if (boardConfig != null)
                 boardConfig.boardSize = size;
         }
 
-        /// <summary>
-        /// Updates the player count configuration based on UI selections.
-        /// </summary>
         public void SetPlayerCount(int count)
         {
             if (boardConfig != null)
                 boardConfig.playerCount = count;
         }
 
-        /// <summary>
-        /// Disconnects from Photon and returns to the main menu.
-        /// </summary>
         public void Disconnect()
         {
             if (PhotonNetwork.IsConnected)
-            {
                 PhotonNetwork.Disconnect();
-                GameLogger.Log(GameLogger.LogLevel.INFO, "Disconnected from Photon.");
-            }
         }
 
         #endregion
 
+        // -------------------------------------------------------
         #region Photon Callbacks
 
         public override void OnConnectedToMaster()
         {
-            _isConnecting = false;
-            UpdateUIStatus("Connected to Photon. Ready to play!");
-
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Connected to Photon Master Server.");
+            Debug.Log("[Lobby] Connected to Master.");
+            lobbyUI?.SetStatusText("Connected! Create or join a room.");
 
             if (_joinRandomOnConnect)
             {
                 _joinRandomOnConnect = false;
                 JoinRandomRoom();
             }
-
-            PhotonNetwork.JoinLobby();
+            else
+            {
+                PhotonNetwork.JoinLobby();
+            }
         }
 
         public override void OnJoinedLobby()
         {
-            GameLogger.Log(GameLogger.LogLevel.INFO, "Joined Photon Lobby.");
-            UpdateUIStatus("In lobby. Create or join a room.");
+            Debug.Log("[Lobby] Joined Photon Lobby.");
+            lobbyUI?.SetStatusText("In lobby. Create or join a room.");
+        }
+
+        public override void OnJoinedRoom()
+        {
+            Debug.Log($"[Lobby] Joined room: {PhotonNetwork.CurrentRoom.Name} " +
+                      $"({PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers})");
+
+            lobbyUI?.SetStatusText($"In room '{PhotonNetwork.CurrentRoom.Name}'. " +
+                                   $"Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
+
+            // IMPORTANT: call OnJoinedRoom first, then UpdatePlayerList
+            lobbyUI?.OnJoinedRoom();
+            lobbyUI?.UpdatePlayerList(PhotonNetwork.PlayerList);
+        }
+
+        public override void OnPlayerEnteredRoom(Player newPlayer)
+        {
+            Debug.Log($"[Lobby] Player joined: {newPlayer.NickName} " +
+                      $"(Actor {newPlayer.ActorNumber}). " +
+                      $"Total: {PhotonNetwork.CurrentRoom.PlayerCount}");
+
+            lobbyUI?.SetStatusText($"{newPlayer.NickName} joined! " +
+                                   $"Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
+            lobbyUI?.UpdatePlayerList(PhotonNetwork.PlayerList);
+        }
+
+        public override void OnPlayerLeftRoom(Player otherPlayer)
+        {
+            Debug.Log($"[Lobby] Player left: {otherPlayer.NickName}");
+            lobbyUI?.SetStatusText($"{otherPlayer.NickName} left.");
+            lobbyUI?.UpdatePlayerList(PhotonNetwork.PlayerList);
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Join random failed ({returnCode}): {message}. Creating new room...");
-
-            UpdateUIStatus("No rooms found. Creating one...");
+            Debug.Log($"[Lobby] Join random failed: {message}. Creating room.");
+            lobbyUI?.SetStatusText("No rooms found. Creating one...");
             CreateRoom("Room_" + Random.Range(1000, 9999));
         }
 
         public override void OnJoinRoomFailed(short returnCode, string message)
         {
-            GameLogger.Log(GameLogger.LogLevel.WARN, $"Join room failed ({returnCode}): {message}");
-            UpdateUIStatus($"Failed to join room: {message}");
+            Debug.LogWarning($"[Lobby] Join room failed: {message}");
+            lobbyUI?.SetStatusText($"Failed to join: {message}");
         }
 
         public override void OnCreateRoomFailed(short returnCode, string message)
         {
-            GameLogger.Log(GameLogger.LogLevel.ERROR, $"Create room failed ({returnCode}): {message}");
-            UpdateUIStatus($"Failed to create room: {message}");
-        }
-
-        public override void OnJoinedRoom()
-        {
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Joined room: {PhotonNetwork.CurrentRoom.Name}. Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-            UpdateUIStatus($"Joined room '{PhotonNetwork.CurrentRoom.Name}'. Waiting for players...");
-
-            if (lobbyUI != null)
-            {
-                lobbyUI.OnJoinedRoom();
-                lobbyUI.UpdatePlayerList(PhotonNetwork.PlayerList);
-                lobbyUI.SetStartButtonVisible(PhotonNetwork.IsMasterClient &&
-                    PhotonNetwork.CurrentRoom.PlayerCount >= 2);
-            }
-        }
-
-        public override void OnPlayerEnteredRoom(Player newPlayer)
-        {
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Player joined: {newPlayer.NickName} (Actor {newPlayer.ActorNumber}). " +
-                $"Total: {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-            UpdateUIStatus($"{newPlayer.NickName} joined! Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-            if (lobbyUI != null)
-            {
-                lobbyUI.UpdatePlayerList(PhotonNetwork.PlayerList);
-                lobbyUI.SetStartButtonVisible(PhotonNetwork.IsMasterClient &&
-                    PhotonNetwork.CurrentRoom.PlayerCount >= 2);
-            }
-        }
-
-        public override void OnPlayerLeftRoom(Player otherPlayer)
-        {
-            GameLogger.Log(GameLogger.LogLevel.INFO,
-                $"Player left: {otherPlayer.NickName} (Actor {otherPlayer.ActorNumber}). " +
-                $"Total: {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-            UpdateUIStatus($"{otherPlayer.NickName} left. Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-            if (lobbyUI != null)
-            {
-                lobbyUI.UpdatePlayerList(PhotonNetwork.PlayerList);
-                lobbyUI.SetStartButtonVisible(PhotonNetwork.IsMasterClient &&
-                    PhotonNetwork.CurrentRoom.PlayerCount >= 2);
-            }
+            Debug.LogError($"[Lobby] Create room failed: {message}");
+            lobbyUI?.SetStatusText($"Failed to create room: {message}");
         }
 
         public override void OnDisconnected(DisconnectCause cause)
         {
-            _isConnecting = false;
-            GameLogger.Log(GameLogger.LogLevel.WARN, $"Disconnected from Photon: {cause}");
-            UpdateUIStatus($"Disconnected: {cause}. Press Connect to try again.");
-        }
-
-        #endregion
-
-        #region Helpers
-
-        private void UpdateUIStatus(string message)
-        {
-            if (lobbyUI != null)
-                lobbyUI.SetStatusText(message);
+            Debug.LogWarning($"[Lobby] Disconnected: {cause}");
+            lobbyUI?.SetStatusText($"Disconnected: {cause}");
         }
 
         #endregion
