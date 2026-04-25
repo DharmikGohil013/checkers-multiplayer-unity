@@ -717,9 +717,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5885c16caad6c4409fb96a5d81c5619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectPool
-  prefab: {fileID: 0}
+  prefab: {fileID: 1246416597019455176, guid: f27b55e72548ccd40a67b07c810a5b0b, type: 3}
   initialSize: 24
-  poolParent: {fileID: 0}
+  poolParent: {fileID: 1760406306}
 --- !u!114 &377685186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -732,9 +732,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5885c16caad6c4409fb96a5d81c5619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectPool
-  prefab: {fileID: 0}
+  prefab: {fileID: 8005443922619684878, guid: 1439a0973e535a8419b5f5f9bc693823, type: 3}
   initialSize: 24
-  poolParent: {fileID: 0}
+  poolParent: {fileID: 559494289}
 --- !u!1 &386149358
 GameObject:
   m_ObjectHideFlags: 0
