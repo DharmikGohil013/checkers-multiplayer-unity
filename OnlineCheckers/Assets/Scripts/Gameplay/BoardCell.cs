@@ -51,9 +51,15 @@ namespace Checkers.Gameplay
         // InputHandler calls this when the cell is clicked/tapped
         public void OnCellClicked()
         {
+            Debug.Log($"[BoardCell] OnCellClicked triggered for cell at ({row},{col})");
             if (GameManager.Instance != null && GameManager.Instance.BoardManager != null)
             {
+                Debug.Log($"[BoardCell] Routing click to BoardManager.TryMove({row}, {col})");
                 GameManager.Instance.BoardManager.TryMove(row, col);
+            }
+            else
+            {
+                Debug.LogError("[BoardCell] Cannot route click: GameManager or BoardManager is null!");
             }
         }
 
@@ -73,6 +79,15 @@ namespace Checkers.Gameplay
 
             if (_spriteRenderer == null)
                 _spriteRenderer = GetComponent<SpriteRenderer>();
+
+            // Auto-add BoxCollider2D if it's missing from the prefab
+            BoxCollider2D col2D = GetComponent<BoxCollider2D>();
+            if (col2D == null)
+            {
+                col2D = gameObject.AddComponent<BoxCollider2D>();
+                col2D.size = new Vector2(1f, 1f);
+                col2D.isTrigger = true;
+            }
 
             _spriteRenderer.color = color;
             _spriteRenderer.sortingOrder = 0;

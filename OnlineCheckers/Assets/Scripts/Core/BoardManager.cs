@@ -48,6 +48,9 @@ namespace Checkers.Core
 
         [Header("Board Parent")]
         [SerializeField] private Transform boardParent;
+        
+        [Header("Pieces Parent")]
+        [SerializeField] private Transform piecesParent;
 
         #endregion
 
@@ -95,6 +98,7 @@ namespace Checkers.Core
         private void Awake()
         {
             if (boardParent == null) boardParent = transform;
+            if (piecesParent == null) piecesParent = transform;
 
             // Get or create pool components — they must exist before InitializeBoard is called
             _piecePool = GetComponent<PiecePool>();
@@ -119,7 +123,7 @@ namespace Checkers.Core
         {
             // Setup pools using Inspector-assigned prefabs (safe fallback)
             if (piecePrefab != null)
-                _piecePool.Setup(piecePrefab, boardParent, 24);
+                _piecePool.Setup(piecePrefab, piecesParent, 24);
 
             if (cellPrefab != null)
                 _cellPool.Setup(cellPrefab, boardParent, 64);
@@ -177,7 +181,7 @@ namespace Checkers.Core
             // (Start runs after all Awake calls, but InitializeBoard can be called
             //  from NetworkGameManager RPC which arrives right after scene load)
             if (piecePrefab != null && _piecePool.PooledCount == 0 && _piecePool.ActiveCount == 0)
-                _piecePool.Setup(piecePrefab, boardParent, 24);
+                _piecePool.Setup(piecePrefab, piecesParent, 24);
 
             if (cellPrefab != null && _cellPool.PooledCount == 0 && _cellPool.ActiveCount == 0)
                 _cellPool.Setup(cellPrefab, boardParent, 64);
@@ -476,7 +480,7 @@ namespace Checkers.Core
             float cellSize = _boardConfig.cellSize > 0 ? _boardConfig.cellSize : 1f;
             float offset   = (_boardSize * cellSize) / 2f - cellSize / 2f;
 
-            piece.transform.SetParent(boardParent);
+            piece.transform.SetParent(piecesParent);
             // CRITICAL: Reset transform completely before setting new values
             piece.transform.localRotation = Quaternion.identity;
             piece.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
@@ -524,12 +528,24 @@ namespace Checkers.Core
         /// </summary>
         public void SelectPiece(int row, int col)
         {
+            Debug.Log($"[BoardManager] SelectPiece called for ({row},{col})");
             var piece = GetPieceAt(row, col);
             if (piece != null)
             {
                 var inputHandler = FindAnyObjectByType<InputHandler>();
                 if (inputHandler != null)
+                {
+                    Debug.Log($"[BoardManager] Found InputHandler. Routing piece selection to HandlePieceClicked.");
                     inputHandler.HandlePieceClicked(piece);
+                }
+                else
+                {
+                    Debug.LogError("[BoardManager] InputHandler not found in scene!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[BoardManager] SelectPiece called but no piece found at ({row},{col})");
             }
         }
 
@@ -538,12 +554,24 @@ namespace Checkers.Core
         /// </summary>
         public void TryMove(int row, int col)
         {
+            Debug.Log($"[BoardManager] TryMove called for ({row},{col})");
             var cell = GetCellAt(row, col);
             if (cell != null)
             {
                 var inputHandler = FindAnyObjectByType<InputHandler>();
                 if (inputHandler != null)
+                {
+                    Debug.Log($"[BoardManager] Found InputHandler. Routing cell click to HandleCellClicked.");
                     inputHandler.HandleCellClicked(cell);
+                }
+                else
+                {
+                    Debug.LogError("[BoardManager] InputHandler not found in scene!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[BoardManager] TryMove called but no cell found at ({row},{col})");
             }
         }
 

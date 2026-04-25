@@ -166,6 +166,13 @@ namespace Checkers.UI
             if (timerPanel != null)
                 timerPanel.SetActive(hasTimer);
 
+            if (timerSlider != null)
+            {
+                timerSlider.minValue = 0f;
+                timerSlider.maxValue = 1f;
+                timerSlider.value = 1f;
+            }
+
             // Initialize player score displays
             InitializeScorePanel();
 
@@ -214,7 +221,16 @@ namespace Checkers.UI
         {
             if (timerSlider != null)
             {
-                float maxTime = _gameManager.GameSettings.turnTimeLimit;
+                float maxTime = 30f; // Default fallback
+                if (_gameManager != null && _gameManager.GameSettings != null)
+                {
+                    maxTime = _gameManager.GameSettings.turnTimeLimit;
+                }
+                
+                // Force limits in case they were changed in the inspector
+                timerSlider.minValue = 0f;
+                timerSlider.maxValue = 1f;
+                
                 timerSlider.value = maxTime > 0f ? timeRemaining / maxTime : 0f;
             }
 
@@ -294,7 +310,10 @@ namespace Checkers.UI
                 PhotonNetwork.Disconnect();
 
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.delayCall += () => 
+            {
+                UnityEditor.EditorApplication.isPlaying = false;
+            };
 #else
             Application.Quit();
 #endif

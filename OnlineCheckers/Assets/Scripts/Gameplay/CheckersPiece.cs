@@ -88,6 +88,14 @@ namespace Checkers.Gameplay
             if (_spriteRenderer == null)
                 _spriteRenderer = GetComponent<SpriteRenderer>();
 
+            // Auto-add CircleCollider2D if it's missing from the prefab
+            CircleCollider2D col2D = GetComponent<CircleCollider2D>();
+            if (col2D == null)
+            {
+                col2D = gameObject.AddComponent<CircleCollider2D>();
+                col2D.radius = 0.4f;
+            }
+
             // Set color based on player owner (0-indexed for config)
             _baseColor = config.GetPlayerColor(owner - 1);
             _spriteRenderer.color = _baseColor;

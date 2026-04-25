@@ -96,8 +96,14 @@ namespace Checkers.Core
                 // Auto-advance turn on timeout (only MasterClient advances, via network RPC)
                 if (PhotonNetwork.IsMasterClient)
                 {
-                    // Use the same NextTurn path that triggers the RPC_EndTurn on all clients
-                    NextTurn();
+                    if (GameManager.Instance != null && GameManager.Instance.NetworkGameManager != null)
+                    {
+                        GameManager.Instance.NetworkGameManager.SendEndTurn();
+                    }
+                    else
+                    {
+                        NextTurn(); // Fallback for local testing
+                    }
                 }
             }
         }
@@ -212,7 +218,14 @@ namespace Checkers.Core
             if (!PhotonNetwork.IsConnected || PhotonNetwork.LocalPlayer == null)
                 return false;
 
-            return GetCurrentPlayer() == PhotonNetwork.LocalPlayer.ActorNumber;
+            int currentTurnPlayer = GetCurrentPlayer();
+            int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+
+            // Optional: uncomment these if you need to spam the log every frame during input check
+            // Debug.Log("[TurnManager] Current Turn Player: " + currentTurnPlayer);
+            // Debug.Log("[TurnManager] My Actor: " + myActor);
+
+            return currentTurnPlayer == myActor;
         }
 
         /// <summary>

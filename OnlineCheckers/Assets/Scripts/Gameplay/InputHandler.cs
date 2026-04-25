@@ -93,27 +93,46 @@ namespace Checkers.Gameplay
             Vector3 screenPos = Vector3.zero;
             string inputType = "";
 
-#if UNITY_EDITOR || UNITY_STANDALONE
-            // Mouse input for PC/Editor
-            if (Input.GetMouseButtonDown(0))
+#if ENABLE_INPUT_SYSTEM
+            // New Input System
+            if (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
             {
                 inputDown = true;
-                screenPos = Input.mousePosition;
-                inputType = "Mouse";
+                screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+                inputType = "Mouse (New System)";
+            }
+            else if (UnityEngine.InputSystem.Touchscreen.current != null && UnityEngine.InputSystem.Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            {
+                inputDown = true;
+                screenPos = UnityEngine.InputSystem.Touchscreen.current.primaryTouch.position.ReadValue();
+                inputType = "Touch (New System)";
             }
 #endif
 
-            // Touch input for mobile (also works in editor with touch simulation)
-            if (Input.touchCount > 0)
+#if ENABLE_LEGACY_INPUT_MANAGER || !ENABLE_INPUT_SYSTEM
+            // Legacy Input Manager (Fallback)
+            if (!inputDown)
             {
-                Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
+#if UNITY_EDITOR || UNITY_STANDALONE
+                if (Input.GetMouseButtonDown(0))
                 {
                     inputDown = true;
-                    screenPos = touch.position;
-                    inputType = "Touch";
+                    screenPos = Input.mousePosition;
+                    inputType = "Mouse (Legacy)";
+                }
+#endif
+                if (!inputDown && Input.touchCount > 0)
+                {
+                    Touch touch = Input.GetTouch(0);
+                    if (touch.phase == TouchPhase.Began)
+                    {
+                        inputDown = true;
+                        screenPos = touch.position;
+                        inputType = "Touch (Legacy)";
+                    }
                 }
             }
+#endif
 
             if (!inputDown)
                 return;
@@ -460,12 +479,15 @@ namespace Checkers.Gameplay
         private bool CanProcessInput()
         {
             if (_gameManager == null || !_gameManager.IsGameActive)
+            {
+                Debug.Log($"[InputHandler] CanProcessInput: false (GameActive is false or GameManager is null)");
                 return false;
+            }
 
-            if (_turnManager == null || !_turnManager.IsLocalPlayerTurn())
-                return false;
-
-            return true;
+            bool isLocalTurn = _turnManager != null && _turnManager.IsLocalPlayerTurn();
+            Debug.Log($"[InputHandler] CanProcessInput: {isLocalTurn} (Current Turn Player: {(_turnManager != null ? _turnManager.GetCurrentPlayer() : -1)}, My Actor: {(PhotonNetwork.InRoom ? PhotonNetwork.LocalPlayer.ActorNumber : -1)})");
+            
+            return isLocalTurn;
         }
 
         private MoveData? FindMoveForCell(int targetRow, int targetCol)

@@ -233,7 +233,11 @@ namespace Checkers.UI
                     maxTime = Core.GameManager.Instance.GameSettings.turnTimeLimit;
 
                 if (maxTime > 0f)
+                {
+                    timerBar.minValue = 0f;
+                    timerBar.maxValue = 1f;
                     timerBar.value = timeRemaining / maxTime;
+                }
             }
 
             if (timerText != null)
@@ -317,7 +321,10 @@ namespace Checkers.UI
                 PhotonNetwork.Disconnect();
 
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.delayCall += () => 
+            {
+                UnityEditor.EditorApplication.isPlaying = false;
+            };
 #else
             Application.Quit();
 #endif

@@ -210,6 +210,18 @@ namespace Checkers.Network
         }
 
         /// <summary>
+        /// Sends an RPC to end the turn. Called on timeout.
+        /// </summary>
+        public void SendEndTurn()
+        {
+            EnsureReferences();
+            if (_turnManager != null)
+            {
+                _photonView.RPC(nameof(RPC_EndTurn), RpcTarget.All, _turnManager.GetCurrentPlayer());
+            }
+        }
+
+        /// <summary>
         /// RPC to end the current turn and advance to the next player.
         /// </summary>
         [PunRPC]

@@ -10,9 +10,7 @@ struct Action_1_t1EB0BEF9E536658571580CB99B26B39A19FE6252;
 struct Action_1_tB44F32ACA513C61A3FB120ABF3B543A334ABB0A0;
 struct Action_1_tB259C54B43B0FC0AA23B9FB777CE2996CB0B4B1B;
 struct Action_1_tE8693FF0E67CDBA52BAFB211BFF1844D076ABAFB;
-struct Action_1_tDC7E880950C1A11A1263B645FF1E9FACD0FB2CAD;
 struct Action_1_t10DCB0C07D0D3C565CEACADC80D1152B35A45F6C;
-struct Action_1_t5211DB675E4A60306C6241B77EA67887836D7509;
 struct Action_1_t9B103DCF4DCA2ADAA12800C4794084698B517900;
 struct Action_1_tD73BC7FEF1671B01BA9C93C20E8C741DB8DEFCFD;
 struct Action_1_t1B5115AA4265AE1C83F3EC48593F86230AF07295;
@@ -30372,7 +30370,7 @@ struct U3CReadReverseRdnsU3Ed__21_t6DC5309953340D6F3CAF345220E2D0AAD878D3DE  : p
 	Stack_1_t11FC055BC8A112A4D3474F6FA0DCAC26D397C08C* ___U3CrdnReadersU3E5__2;
 	DerSequenceReader_tE6BA1C28D31B7F21AFC1A327DD7BBC028041308A* ___U3CrdnReaderU3E5__3;
 };
-struct U3CKingPromotionAnimationU3Ed__25_tBC5290E4897248E0F4D00A527D19EFB8DE7825AB  : public RuntimeObject
+struct U3CKingPromotionAnimationU3Ed__23_tA0E9DF951DCFF42F86BE1A1A8237650634D580BE  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
@@ -30382,7 +30380,7 @@ struct U3CKingPromotionAnimationU3Ed__25_tBC5290E4897248E0F4D00A527D19EFB8DE7825
 	float ___U3CdurationU3E5__4;
 	float ___U3CelapsedU3E5__5;
 };
-struct U3CMoveAnimationCoroutineU3Ed__23_tA5BFE975C3A900A8EE765DC95CD7CDD702D8E82F  : public RuntimeObject
+struct U3CMoveAnimationCoroutineU3Ed__21_tFEA33068D6AEC7879D3E07160A472B16227BE234  : public RuntimeObject
 {
 	int32_t ___U3CU3E1__state;
 	RuntimeObject* ___U3CU3E2__current;
@@ -54768,17 +54766,9 @@ struct FullScreenRenderPass_t7AC73942B58AE155BA1A7D0658E4B1C3E2FF9DEA_StaticFiel
 {
 	MaterialPropertyBlock_t2308669579033A857EFE6E4831909F638B27411D* ___s_SharedPropertyBlock;
 };
-struct BoardCell_tF5A3A5A3B3FBF316EE5B0D80590CB3F344FA2035_StaticFields
-{
-	Action_1_tDC7E880950C1A11A1263B645FF1E9FACD0FB2CAD* ___OnCellClicked;
-};
 struct ChatNewGui_t3569A4D4E047F6BBA673D0AC2D0A0F39A3BB350D_StaticFields
 {
 	String_t* ___HelpText;
-};
-struct CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A_StaticFields
-{
-	Action_1_t5211DB675E4A60306C6241B77EA67887836D7509* ___OnPieceClicked;
 };
 struct ConnectionHandler_t94DB2DB95E1E5AC42D211A71B3829706DCF6ECB4_StaticFields
 {
@@ -62632,15 +62622,15 @@ const Il2CppTypeDefinitionSizes g_typeDefinitionSize9178 = { sizeof(BoardSnapsho
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9179;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9179 = { sizeof(StateSerializer_t81F81B3FEF1C8BDE78D3064174BE426453D5870F), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9180;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9180 = { sizeof(BoardCell_tF5A3A5A3B3FBF316EE5B0D80590CB3F344FA2035), -1, sizeof(BoardCell_tF5A3A5A3B3FBF316EE5B0D80590CB3F344FA2035_StaticFields), 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9180 = { sizeof(BoardCell_tF5A3A5A3B3FBF316EE5B0D80590CB3F344FA2035), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9181;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9181 = { sizeof(CellPool_tFBB9036FE69491C8E0DA3D5DE43D7C3ED2F621D1), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9182;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9182 = { sizeof(U3CKingPromotionAnimationU3Ed__25_tBC5290E4897248E0F4D00A527D19EFB8DE7825AB), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9182 = { sizeof(U3CKingPromotionAnimationU3Ed__23_tA0E9DF951DCFF42F86BE1A1A8237650634D580BE), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9183;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9183 = { sizeof(U3CMoveAnimationCoroutineU3Ed__23_tA5BFE975C3A900A8EE765DC95CD7CDD702D8E82F), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9183 = { sizeof(U3CMoveAnimationCoroutineU3Ed__21_tFEA33068D6AEC7879D3E07160A472B16227BE234), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9184;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9184 = { sizeof(CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A), -1, sizeof(CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A_StaticFields), 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9184 = { sizeof(CheckersPiece_tC1135E81B70C2CD2ADAFBA87BF468DBBCF2F963A), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9185;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9185 = { sizeof(int32_t)+ sizeof(RuntimeObject), sizeof(int32_t), 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize9186;
