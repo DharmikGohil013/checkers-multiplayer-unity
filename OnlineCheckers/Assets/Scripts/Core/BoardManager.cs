@@ -516,5 +516,37 @@ namespace Checkers.Core
         }
 
         #endregion
+
+        #region Input Handling Routing
+
+        /// <summary>
+        /// Routes a piece selection from the UI/collider to the InputHandler.
+        /// </summary>
+        public void SelectPiece(int row, int col)
+        {
+            var piece = GetPieceAt(row, col);
+            if (piece != null)
+            {
+                var inputHandler = FindAnyObjectByType<InputHandler>();
+                if (inputHandler != null)
+                    inputHandler.HandlePieceClicked(piece);
+            }
+        }
+
+        /// <summary>
+        /// Routes a cell click (move attempt) from the UI/collider to the InputHandler.
+        /// </summary>
+        public void TryMove(int row, int col)
+        {
+            var cell = GetCellAt(row, col);
+            if (cell != null)
+            {
+                var inputHandler = FindAnyObjectByType<InputHandler>();
+                if (inputHandler != null)
+                    inputHandler.HandleCellClicked(cell);
+            }
+        }
+
+        #endregion
     }
-}   
+}

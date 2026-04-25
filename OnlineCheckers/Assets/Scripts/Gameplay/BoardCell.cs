@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Checkers.Core;
 using Checkers.Utilities;
 
 namespace Checkers.Gameplay
@@ -30,13 +31,6 @@ namespace Checkers.Gameplay
 
         #endregion
 
-        #region Events
-
-        /// <summary>Fired when this cell is clicked.</summary>
-        public static event Action<BoardCell> OnCellClicked;
-
-        #endregion
-
         #region Unity Lifecycle
 
         private void Awake()
@@ -54,8 +48,14 @@ namespace Checkers.Gameplay
             CreateHighlightRenderer();
         }
 
-        // NOTE: OnMouseDown removed — input is now handled centrally by InputHandler.Update()
-        // using Physics2D.RaycastAll, which works on both PC and mobile devices.
+        // InputHandler calls this when the cell is clicked/tapped
+        public void OnCellClicked()
+        {
+            if (GameManager.Instance != null && GameManager.Instance.BoardManager != null)
+            {
+                GameManager.Instance.BoardManager.TryMove(row, col);
+            }
+        }
 
         #endregion
 

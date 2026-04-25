@@ -88,12 +88,10 @@ namespace Checkers.Gameplay
         /// </summary>
         private void Update()
         {
-            if (!CanProcessInput())
-                return;
-
             // Detect click/tap
             bool inputDown = false;
             Vector3 screenPos = Vector3.zero;
+            string inputType = "";
 
 #if UNITY_EDITOR || UNITY_STANDALONE
             // Mouse input for PC/Editor
@@ -101,6 +99,7 @@ namespace Checkers.Gameplay
             {
                 inputDown = true;
                 screenPos = Input.mousePosition;
+                inputType = "Mouse";
             }
 #endif
 
@@ -112,24 +111,39 @@ namespace Checkers.Gameplay
                 {
                     inputDown = true;
                     screenPos = touch.position;
+                    inputType = "Touch";
                 }
             }
 
             if (!inputDown)
                 return;
 
+            Debug.Log($"[InputHandler] {inputType} Input detected at screen pos: {screenPos}");
+
+            if (!CanProcessInput())
+            {
+                Debug.Log($"[InputHandler] Input ignored: CanProcessInput() returned false. GameActive: {(_gameManager != null ? _gameManager.IsGameActive.ToString() : "null")}, LocalTurn: {(_turnManager != null ? _turnManager.IsLocalPlayerTurn().ToString() : "null")}");
+                return;
+            }
+
             // Ensure camera is available
             if (_mainCamera == null)
             {
                 _mainCamera = Camera.main;
-                if (_mainCamera == null) return;
+                if (_mainCamera == null)
+                {
+                    Debug.LogError("[InputHandler] Main Camera is null, cannot process input!");
+                    return;
+                }
             }
 
             // Convert screen position to world position
             Vector2 worldPos = _mainCamera.ScreenToWorldPoint(screenPos);
+            Debug.Log($"[InputHandler] Converted screen pos {screenPos} to world pos: {worldPos}");
 
             // Raycast to find what was clicked — check pieces FIRST (higher sorting order)
             RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero);
+            Debug.Log($"[InputHandler] RaycastAll found {hits.Length} hits.");
 
             CheckersPiece hitPiece = null;
             BoardCell hitCell = null;
@@ -137,6 +151,8 @@ namespace Checkers.Gameplay
             // Sort by priority: pieces first, then cells
             for (int i = 0; i < hits.Length; i++)
             {
+                Debug.Log($"[InputHandler] Hit {i}: {hits[i].collider.gameObject.name}");
+                
                 if (hitPiece == null)
                 {
                     CheckersPiece piece = hits[i].collider.GetComponent<CheckersPiece>();
@@ -152,14 +168,20 @@ namespace Checkers.Gameplay
                 }
             }
 
-            // Process the hit
+            // Process the hit by calling the required methods on the objects themselves
             if (hitPiece != null)
             {
-                HandlePieceClicked(hitPiece);
+                Debug.Log($"[InputHandler] Selecting Piece: {hitPiece.gameObject.name} at ({hitPiece.Row},{hitPiece.Col})");
+                hitPiece.OnPieceClicked();
             }
             else if (hitCell != null)
             {
-                HandleCellClicked(hitCell);
+                Debug.Log($"[InputHandler] Selecting Cell: {hitCell.gameObject.name} at ({hitCell.Row},{hitCell.Col})");
+                hitCell.OnCellClicked();
+            }
+            else
+            {
+                Debug.Log($"[InputHandler] Raycast hit nothing playable. If clicking board, check colliders and Z-position.");
             }
         }
 
@@ -167,7 +189,7 @@ namespace Checkers.Gameplay
 
         #region Event Handlers
 
-        private void HandlePieceClicked(CheckersPiece piece)
+        public void HandlePieceClicked(CheckersPiece piece)
         {
             if (!CanProcessInput())
                 return;
@@ -207,7 +229,7 @@ namespace Checkers.Gameplay
             }
         }
 
-        private void HandleCellClicked(BoardCell cell)
+        public void HandleCellClicked(BoardCell cell)
         {
             if (!CanProcessInput())
                 return;

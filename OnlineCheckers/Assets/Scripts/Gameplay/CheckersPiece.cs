@@ -36,8 +36,6 @@ namespace Checkers.Gameplay
 
         #endregion
 
-        #endregion
-
         #region Unity Lifecycle
 
         private void Awake()
@@ -56,9 +54,15 @@ namespace Checkers.Gameplay
         // InputHandler calls this when the piece is clicked/tapped
         public void OnPieceClicked()
         {
+            Debug.Log($"[CheckersPiece] OnPieceClicked triggered for piece at ({row},{col})");
             if (GameManager.Instance != null && GameManager.Instance.BoardManager != null)
             {
+                Debug.Log($"[CheckersPiece] Routing click to BoardManager.SelectPiece({row}, {col})");
                 GameManager.Instance.BoardManager.SelectPiece(row, col);
+            }
+            else
+            {
+                Debug.LogError("[CheckersPiece] Cannot route click: GameManager or BoardManager is null!");
             }
         }
 
